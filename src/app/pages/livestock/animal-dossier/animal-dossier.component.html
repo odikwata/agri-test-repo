@@ -1,0 +1,1547 @@
+<div class="min-h-screen flex flex-col bg-[#F8FAF8] text-slate-800 -mx-6 -mt-3 p-6 sm:p-8">
+  <!-- Feedback Notification Toast -->
+  @if (actionFeedback()) {
+    <div class="mb-5 p-4 rounded-xl bg-[#1B4332] text-white shadow-lg flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-300">
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-emerald-400">check_circle</span>
+        <span class="text-sm font-semibold">{{ actionFeedback() }}</span>
+      </div>
+      <button (click)="actionFeedback.set(null)" class="text-emerald-300 hover:text-white transition-colors cursor-pointer">
+        <span class="material-symbols-outlined text-sm">close</span>
+      </button>
+    </div>
+  }
+
+  <!-- Header Breadcrumb & Micro-telemetry Bar -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 mb-6 border-b border-slate-200">
+    <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-9 h-9 rounded-lg bg-[#1B4332] flex items-center justify-center text-white font-heading font-bold text-lg shadow-sm">
+          <span class="material-symbols-outlined text-emerald-400 text-xl">pets</span>
+        </div>
+        <div>
+          <span class="font-heading text-lg font-bold tracking-tight text-[#1B4332]">AgriPrecision</span>
+          <span class="text-[10px] uppercase tracking-wider font-semibold text-emerald-700 block -mt-1">FarmOS Enterprise</span>
+        </div>
+      </div>
+      <div class="hidden md:flex items-center space-x-2 text-sm text-slate-400 border-l border-slate-200 pl-4">
+        <a routerLink="/livestock" class="hover:text-slate-700 cursor-pointer transition-colors">Livestock Registry</a>
+        <span class="text-slate-300">&gt;</span>
+        <span class="hover:text-slate-700 cursor-pointer transition-colors">{{ animal().holdingName || 'Cattle Herd' }}</span>
+        <span class="text-slate-300">&gt;</span>
+        <span class="font-semibold text-slate-800 bg-slate-200/70 px-2.5 py-0.5 rounded-full text-xs">{{ animal().name }} ({{ animal().tag }})</span>
+      </div>
+    </div>
+
+    <!-- Right: Telemetry pill & Actions -->
+    <div class="flex items-center space-x-3">
+      <div class="hidden lg:flex items-center space-x-2 bg-emerald-50/80 border border-emerald-200/60 px-3 py-1.5 rounded-xl text-xs text-[#1B4332]">
+        <span class="material-symbols-outlined text-emerald-600 text-base">sensors</span>
+        <span class="font-semibold">{{ animal().holdingName }}</span>
+        @if (animal().penName) {
+          <span class="text-emerald-300">|</span>
+          <span>{{ animal().penName }}</span>
+        }
+      </div>
+
+      <a routerLink="/livestock" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-50 transition-colors shadow-xs">
+        <span class="material-symbols-outlined text-sm">arrow_back</span>
+        <span>Herd Registry</span>
+      </a>
+
+      <div class="flex items-center space-x-2 pl-2 border-l border-slate-200">
+        <div class="w-8 h-8 rounded-full bg-[#1F5138] text-white flex items-center justify-center font-bold text-xs">SM</div>
+        <div class="hidden sm:block leading-tight text-left">
+          <p class="text-xs font-semibold text-slate-800">Dr. Sarah Miller</p>
+          <p class="text-[10px] text-slate-500">Chief Veterinarian</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Primary Animal Identity Banner -->
+  <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs relative overflow-hidden mb-6">
+    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#1B4332] via-[#2D8055] to-[#52B788]"></div>
+
+    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+      <div class="flex items-start sm:items-center gap-5">
+        <div class="relative group shrink-0">
+          <img [src]="animal().photo" [alt]="animal().name" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover ring-2 ring-slate-100 shadow-xs bg-slate-100" referrerpolicy="no-referrer"/>
+          <button (click)="openEditProfile()" class="absolute bottom-1 right-1 bg-white/95 p-1.5 rounded-lg shadow-sm text-slate-600 hover:text-[#1B4332] border border-slate-200 hover:scale-105 transition transform cursor-pointer" title="Edit Profile">
+            <span class="material-symbols-outlined text-xs">edit</span>
+          </button>
+        </div>
+
+        <div class="space-y-1.5">
+          <div class="flex flex-wrap items-center gap-3">
+            <h1 class="text-3xl font-heading font-bold text-slate-900 tracking-tight">{{ animal().name }}</h1>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100/90 text-emerald-800 border border-emerald-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+              {{ animal().status }}
+            </span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-medium bg-slate-100 text-slate-600 border border-slate-200">
+              RFID: {{ animal().rfid }}
+            </span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-medium bg-slate-100 text-slate-600 border border-slate-200">
+              {{ animal().taxId }}
+            </span>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-y-1 gap-x-4 text-sm text-slate-600">
+            <div class="flex items-center gap-1 font-semibold text-slate-800">
+              <span>Ear Tag:</span>
+              <span class="text-[#1B4332] font-mono font-bold">{{ animal().tag }}</span>
+            </div>
+            <span class="text-slate-300">•</span>
+            <span>{{ animal().breed }}</span>
+            <span class="text-slate-300">•</span>
+            <span>DOB: {{ animal().dob }}</span>
+            @if (animal().location) {
+              <span class="text-slate-300">•</span>
+              <span class="inline-flex items-center gap-1 text-emerald-800 font-medium">
+                <span class="material-symbols-outlined text-sm">location_on</span>
+                {{ animal().location }}
+              </span>
+            }
+          </div>
+
+          <div class="flex items-center gap-2 text-xs text-slate-400">
+            <span class="material-symbols-outlined text-sm text-emerald-600">sensors</span>
+            <span>{{ animal().collarStatus }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap items-center gap-2.5 w-full lg:w-auto self-end lg:self-center border-t lg:border-t-0 pt-4 lg:pt-0">
+        <button (click)="openEditProfile()" class="inline-flex items-center gap-2 px-3.5 py-2.5 bg-white border border-slate-300 hover:border-slate-400 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 shadow-xs transition-colors cursor-pointer">
+          <span class="material-symbols-outlined text-[16px] text-slate-500">edit</span>
+          <span>Edit Profile</span>
+        </button>
+        <button (click)="openMoveLocation()" class="inline-flex items-center gap-2 px-3.5 py-2.5 bg-white border border-slate-300 hover:border-slate-400 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 shadow-xs transition-colors cursor-pointer">
+          <span class="material-symbols-outlined text-[16px] text-slate-500">near_me</span>
+          <span>Move Location</span>
+        </button>
+        <button (click)="openUpdateStatus()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold shadow-xs transition cursor-pointer">
+          <span class="material-symbols-outlined text-[16px]">refresh</span>
+          <span>Update Status</span>
+        </button>
+        <button (click)="exportDossier()" class="p-2.5 border border-slate-300 rounded-xl text-slate-500 hover:bg-slate-50 transition cursor-pointer" title="Export Animal Dossier">
+          <span class="material-symbols-outlined text-sm">file_download</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Module Navigation Tabs -->
+  <nav class="border-b border-slate-200 flex items-center space-x-3 overflow-x-auto pb-2 mb-6">
+    <button (click)="setTab('health')" [class]="activeTab() === 'health' ? 'bg-[#1B4332] text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition cursor-pointer">
+      <span class="material-symbols-outlined text-[18px]">medical_services</span>
+      <span>Health &amp; Medical</span>
+    </button>
+    <button (click)="setTab('feeding')" [class]="activeTab() === 'feeding' ? 'bg-[#1B4332] text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition cursor-pointer">
+      <span class="material-symbols-outlined text-[18px]">grain</span>
+      <span>Feeding &amp; Rations</span>
+    </button>
+    <button (click)="setTab('breeding')" [class]="activeTab() === 'breeding' ? 'bg-[#1B4332] text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition cursor-pointer">
+      <span class="material-symbols-outlined text-[18px]">diversity_2</span>
+      <span>Breeding &amp; Pedigree</span>
+    </button>
+    <button (click)="setTab('accounting')" [class]="activeTab() === 'accounting' ? 'bg-[#1B4332] text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition cursor-pointer">
+      <span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+      <span>Accounting &amp; Valuation</span>
+    </button>
+    <button (click)="setTab('telemetry')" [class]="activeTab() === 'telemetry' ? 'bg-[#1B4332] text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition cursor-pointer">
+      <span class="material-symbols-outlined text-[18px]">sensors</span>
+      <span>Telemetry &amp; Rumination</span>
+    </button>
+  </nav>
+
+  <!-- TAB 1: HEALTH & MEDICAL -->
+  @if (activeTab() === 'health') {
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div class="lg:col-span-8 space-y-6">
+        <!-- Vaccinations -->
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+          <div class="p-5 flex items-center justify-between border-b border-slate-200">
+            <div>
+              <h2 class="text-lg font-heading font-bold text-slate-900">Recent Vaccinations</h2>
+              <p class="text-xs text-slate-500">Official immunization ledger &amp; compliance clearance</p>
+            </div>
+            <button (click)="openAddVaccine()" class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg border border-emerald-200 transition cursor-pointer">
+              <span class="material-symbols-outlined text-sm">add</span>
+              <span>Add Record</span>
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs sm:text-sm">
+              <thead>
+                <tr class="border-b border-slate-100 bg-slate-50/50 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <th class="py-3 px-5">Vaccine Name</th>
+                  <th class="py-3 px-4">Date Administered</th>
+                  <th class="py-3 px-4">Administered By</th>
+                  <th class="py-3 px-4">Dosage / Lot</th>
+                  <th class="py-3 px-5 text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                @for (vax of vaccines(); track (vax.id || vax.name + vax.date)) {
+                  <tr class="hover:bg-slate-50/60 transition-colors">
+                    <td class="py-3.5 px-5">
+                      <div class="font-medium text-slate-900">{{ vax.name }}</div>
+                      <div class="text-[11px] text-slate-400">{{ vax.subtitle }}</div>
+                    </td>
+                    <td class="py-3.5 px-4 text-slate-600 font-mono text-xs">{{ vax.date }}</td>
+                    <td class="py-3.5 px-4 text-slate-700 font-medium">{{ vax.adminBy }}</td>
+                    <td class="py-3.5 px-4 text-slate-500 text-xs">{{ vax.dosageAndLotDisplay || (vax.dosage + ' • ' + vax.lot) }}</td>
+                    <td class="py-3.5 px-5 text-right">
+                      <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold" [class]="vax.statusVariant === 'SUCCESS' || vax.status === 'Active Shield' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'">
+                        {{ vax.status }}
+                      </span>
+                    </td>
+                  </tr>
+                }
+                @if (vaccines().length === 0) {
+                  <tr>
+                    <td colspan="5" class="py-6 text-center text-xs text-slate-400">No vaccination records found for this animal.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Medical History -->
+        <section class="space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-lg font-heading font-bold text-slate-900">Medical History Summary</h2>
+              <span class="text-xs text-slate-500">Lifetime verified logs: {{ lifetimeVerifiedLogsCount() || medicalLogs().length }}</span>
+            </div>
+            <button (click)="openAddMedicalLog()" class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg border border-emerald-200 transition cursor-pointer">
+              <span class="material-symbols-outlined text-sm">add</span>
+              <span>Add Medical Log</span>
+            </button>
+          </div>
+          @for (log of medicalLogs(); track log.id) {
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex items-start gap-4">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" [class]="log.type === 'routine' ? 'bg-emerald-50 border border-emerald-200 text-emerald-600' : 'bg-amber-50 border border-amber-200 text-amber-600'">
+                <span class="material-symbols-outlined text-lg">{{ log.type === 'routine' ? 'verified' : 'warning' }}</span>
+              </div>
+              <div class="flex-grow">
+                <div class="flex flex-wrap items-center justify-between gap-1">
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-heading font-semibold text-slate-900 text-base">{{ log.title }}</h3>
+                    @if (log.severity) {
+                      <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 text-slate-600">{{ log.severity }}</span>
+                    }
+                  </div>
+                  <span class="text-xs font-mono text-slate-400">{{ log.date }}</span>
+                </div>
+                <p class="text-sm text-slate-600 mt-1 leading-relaxed">{{ log.notes }}</p>
+                <div class="mt-2.5 flex items-center gap-4 text-xs text-slate-500">
+                  <span>Examiner: <strong class="text-slate-700">{{ log.examiner }}</strong></span>
+                  <span>•</span>
+                  <span>Clearance: <strong class="text-emerald-700">{{ log.clearance }}</strong></span>
+                </div>
+              </div>
+            </div>
+          }
+          @if (medicalLogs().length === 0) {
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 text-center text-xs text-slate-400">
+              No clinical or medical logs recorded yet.
+            </div>
+          }
+        </section>
+
+        <!-- Growth Curve SVG -->
+        <section class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-base font-heading font-bold text-slate-900">Weight &amp; Biomass Progression</h2>
+              <p class="text-xs text-slate-500">12-month weighing telemetry vs. breed optimum standard</p>
+            </div>
+            <div class="flex items-center space-x-3 text-xs">
+              <span class="flex items-center gap-1.5"><span class="w-3 h-1 bg-emerald-600 rounded-full"></span> {{ healthMedicalData()?.weightProgression?.animalLabel || (animal().name + ' (Actual)') }}</span>
+              <span class="flex items-center gap-1.5"><span class="w-3 h-1 bg-slate-300 rounded-full"></span> {{ healthMedicalData()?.weightProgression?.benchmarkLabel || 'Herd Mean' }}</span>
+            </div>
+          </div>
+          <div class="w-full bg-slate-50/80 rounded-xl p-4 border border-slate-100">
+            <div class="h-36 w-full flex items-end">
+              <svg class="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 500 120">
+                <line stroke="#E2E8F0" stroke-dasharray="4" stroke-width="1" x1="0" x2="500" y1="20" y2="20"></line>
+                <line stroke="#E2E8F0" stroke-dasharray="4" stroke-width="1" x1="0" x2="500" y1="60" y2="60"></line>
+                <line stroke="#E2E8F0" stroke-dasharray="4" stroke-width="1" x1="0" x2="500" y1="100" y2="100"></line>
+                <path d="M 0,95 Q 120,80 250,55 T 500,30" fill="none" stroke="#CBD5E1" stroke-dasharray="3" stroke-width="2"></path>
+                <path d="M 0,105 Q 100,90 220,60 T 500,20 L 500,120 L 0,120 Z" fill="rgba(82, 183, 136, 0.2)"></path>
+                <path d="M 0,105 Q 100,90 220,60 T 500,20" fill="none" stroke="#1B4332" stroke-linecap="round" stroke-width="3"></path>
+                <circle cx="0" cy="105" fill="#1B4332" r="3.5"></circle>
+                <circle cx="220" cy="60" fill="#1B4332" r="3.5"></circle>
+                <circle cx="500" cy="20" fill="#10B981" r="5" stroke="#ffffff" stroke-width="2"></circle>
+              </svg>
+            </div>
+            @if (weightPoints().length > 0) {
+              <div class="flex justify-between text-[11px] font-mono text-slate-400 mt-2">
+                @for (pt of weightPoints(); track pt.date; let last = $last) {
+                  <span [class.text-[#1B4332]]="last" [class.font-bold]="last">
+                    {{ pt.monthLabel }} ({{ pt.actualWeightKg }} kg)
+                  </span>
+                }
+              </div>
+            } @else {
+              <div class="flex justify-between text-[11px] font-mono text-slate-400 mt-2">
+                <span>Nov '22 (392 kg)</span>
+                <span>Feb '23 (401 kg)</span>
+                <span>Jun '23 (412 kg)</span>
+                <span>Oct '23 (418 kg)</span>
+                <span class="text-[#1B4332] font-bold">Today ({{ animal().weight }} kg)</span>
+              </div>
+            }
+          </div>
+        </section>
+      </div>
+
+      <!-- Right Column: Checks & Score -->
+      <div class="lg:col-span-4 space-y-6">
+        <section class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+          <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+            <div class="flex items-center space-x-2.5">
+              <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                <span class="material-symbols-outlined text-sm">event</span>
+              </div>
+              <h2 class="text-base font-heading font-bold text-slate-900">Upcoming Checks</h2>
+            </div>
+            <button (click)="openAddCheck()" class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded-lg border border-emerald-200 transition cursor-pointer">
+              <span class="material-symbols-outlined text-xs">add</span>
+              <span>Schedule</span>
+            </button>
+          </div>
+          <div class="space-y-4 pt-4">
+            @for (check of upcomingChecks(); track (check.id || check.title + check.date)) {
+              <div class="relative pl-4 border-l-2" [class]="check.isUrgent ? 'border-emerald-600' : 'border-slate-300'">
+                <div class="text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-400">{{ check.date }}</div>
+                <h3 class="font-heading font-semibold text-slate-900 text-sm mt-0.5">{{ check.title }}</h3>
+                <p class="text-[11px] font-medium tracking-tight text-slate-400 uppercase mt-0.5">{{ check.subtitle || check.category }}</p>
+              </div>
+            }
+            @if (upcomingChecks().length === 0) {
+              <div class="text-xs text-slate-400 py-3 text-center">No upcoming checks scheduled.</div>
+            }
+          </div>
+          <button (click)="showCalendarModal.set(true)" class="w-full mt-6 py-2.5 px-4 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl text-xs font-semibold text-slate-700 transition cursor-pointer">
+            View Full Calendar
+          </button>
+        </section>
+
+        <!-- Health Score -->
+        <section class="bg-gradient-to-br from-emerald-600 to-[#1B4332] text-white rounded-2xl p-6 shadow-md relative overflow-hidden">
+          <span class="text-xs font-mono font-semibold uppercase tracking-wider text-emerald-200">HEALTH SCORE</span>
+          <div class="flex items-baseline space-x-2 my-2">
+            <span class="text-5xl font-heading font-bold">{{ animal().healthScore }}</span>
+            <span class="text-lg text-emerald-200">/ {{ animal().maxHealthScore }}</span>
+          </div>
+          <p class="text-xs text-emerald-100/90 leading-relaxed mb-4">{{ animal().healthStandingDesc }}</p>
+          <div class="pt-3 border-t border-emerald-500/30 space-y-2">
+            <div class="flex justify-between text-[11px]">
+              <span>{{ healthMedicalData()?.healthScore?.ruminationLabel || 'Rumination Consistency' }}</span>
+              <span class="font-semibold">{{ animal().ruminationMinutes }} min ({{ animal().ruminationPct }}%)</span>
+            </div>
+            <div class="w-full bg-black/20 rounded-full h-1.5 overflow-hidden">
+              <div class="bg-emerald-300 h-1.5 rounded-full" [style.width.%]="animal().ruminationPct"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  }
+
+  <!-- TAB 2: FEEDING & RATIONS -->
+  @if (activeTab() === 'feeding') {
+    <div class="space-y-6">
+      <!-- 4 Quick KPI cards bound to GET /api/v1/livestock/{id}/feeding-rations -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-bold mb-1">
+            <span>DAILY DRY MATTER INTAKE</span>
+            <span class="material-symbols-outlined text-emerald-600 text-lg">scale</span>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span class="text-3xl font-heading font-bold text-slate-900">{{ feedingRationsData()?.dailyDryMatterIntakeKg ?? 10.6 }} kg</span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Optimal</span>
+          </div>
+          <div class="w-full bg-slate-100 h-1.5 rounded-full mt-3 overflow-hidden">
+            <div class="bg-emerald-600 h-full rounded-full" style="width: 97.1%"></div>
+          </div>
+          <p class="text-xs text-slate-500 mt-2 flex justify-between">
+            <span>Cohort: {{ feedingRationsData()?.managementCohort || 'Kraal 02' }}</span>
+          </p>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-bold mb-1">
+            <span>FEED CONVERSION RATIO</span>
+            <span class="material-symbols-outlined text-emerald-600 text-lg">speed</span>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span class="text-xl font-heading font-bold text-slate-900">{{ feedingRationsData()?.feedConversionRatio || '1.42 (Optimal Efficiency)' }}</span>
+          </div>
+          <p class="text-xs text-emerald-700 font-bold mt-3">Consistent baseline rate</p>
+          <p class="text-xs text-slate-400 mt-0.5">Active Nutrition Telemetry</p>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-bold mb-1">
+            <span>SMARTTROUGH™ WATER</span>
+            <span class="material-symbols-outlined text-blue-600 text-lg">water_drop</span>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span class="text-3xl font-heading font-bold text-slate-900">{{ feedingRationsData()?.waterIntakeLitersPerDay ?? 45.0 }}</span>
+            <span class="text-xs text-slate-500 font-mono">Liters / day</span>
+          </div>
+          <p class="text-xs text-emerald-700 font-bold mt-3">Verified hydration intake</p>
+          <p class="text-xs text-slate-400 mt-0.5">Station Flow Sensor</p>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+          <div class="flex items-center justify-between text-slate-500 text-xs font-bold mb-1">
+            <span>RATION COST / DAY</span>
+            <span class="material-symbols-outlined text-amber-600 text-lg">payments</span>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span class="text-3xl font-heading font-bold text-slate-900">${{ (feedingRationsData()?.dailyFeedCost ?? 3.85).toFixed(2) }}</span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-800">TMR Mix</span>
+          </div>
+          <p class="text-xs text-emerald-700 font-bold mt-3">Protocol: {{ feedingRationsData()?.activeNutritionProtocol || 'Total Mixed Ration' }}</p>
+        </div>
+      </div>
+
+      <!-- Main Bento: TMR Formulation & Feeder Station -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-7 space-y-6">
+          <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+              <div>
+                <h3 class="font-heading text-lg font-bold text-slate-900">Daily Ration Formulation &amp; TMR Breakdown</h3>
+                <p class="text-xs text-slate-500">Active Protocol: <strong class="text-slate-800">{{ feedingRationsData()?.activeNutritionProtocol || 'High-Yield Total Mixed Ration (TMR-A1)' }}</strong> • Cohort: {{ feedingRationsData()?.managementCohort || animal().holdingName }}</p>
+              </div>
+              <span class="font-mono text-xs bg-slate-100 px-3 py-1.5 rounded-lg text-slate-600">Mix Uniformity: 98.4%</span>
+            </div>
+
+            <!-- Multi-segment bar -->
+            <div class="h-4 w-full bg-slate-100 rounded-full overflow-hidden flex mb-3">
+              <div class="bg-[#1B4332] h-full" style="width: 45%" title="Silage / Haylage 45%"></div>
+              <div class="bg-emerald-600 h-full" style="width: 30%" title="Rolled Maize & Grain 30%"></div>
+              <div class="bg-amber-600 h-full" style="width: 18%" title="Protein Cake 18%"></div>
+              <div class="bg-blue-600 h-full" style="width: 7%" title="Trace Mineral & Buffer 7%"></div>
+            </div>
+
+            <!-- Ingredients Table -->
+            <div class="overflow-x-auto rounded-xl border border-slate-200 mb-6">
+              <table class="w-full text-left text-xs sm:text-sm">
+                <thead class="bg-slate-50 uppercase text-[11px] font-bold text-slate-500 border-b border-slate-200">
+                  <tr>
+                    <th class="py-2.5 px-4">Ingredient Component</th>
+                    <th class="py-2.5 px-4 text-right">Ration % / Amount</th>
+                    <th class="py-2.5 px-4">Nutritional Purpose</th>
+                    <th class="py-2.5 px-4 text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  @if (feedingRationsData()?.rationComponents?.length) {
+                    @for (comp of feedingRationsData()!.rationComponents; track comp.ingredientName) {
+                      <tr>
+                        <td class="py-2.5 px-4 font-semibold text-slate-900">{{ comp.ingredientName }}</td>
+                        <td class="py-2.5 px-4 text-right font-mono font-bold text-[#1B4332]">{{ comp.percentageOrAmount }}</td>
+                        <td class="py-2.5 px-4 text-slate-600 text-xs">{{ comp.purpose }}</td>
+                        <td class="py-2.5 px-4 text-center"><span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">Dispensed</span></td>
+                      </tr>
+                    }
+                  } @else {
+                    <tr>
+                      <td class="py-2.5 px-4 font-semibold text-slate-900">Lucerne / Alfalfa Silage</td>
+                      <td class="py-2.5 px-4 text-right font-mono font-bold">45%</td>
+                      <td class="py-2.5 px-4 text-slate-600 text-xs">Primary digestible fiber &amp; rumen mat</td>
+                      <td class="py-2.5 px-4 text-center"><span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">Dispensed</span></td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Biochemical specs -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                <span class="text-[10px] font-bold text-slate-400 uppercase">Crude Protein (CP)</span>
+                <p class="text-xl font-heading font-bold text-slate-900 mt-1">16.8%</p>
+                <span class="text-[10px] text-emerald-700 font-semibold">Optimal Range</span>
+              </div>
+              <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                <span class="text-[10px] font-bold text-slate-400 uppercase">Net Energy (NEL)</span>
+                <p class="text-xl font-heading font-bold text-slate-900 mt-1">1.72 Mcal</p>
+                <span class="text-[10px] text-emerald-700 font-semibold">High Yield</span>
+              </div>
+              <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                <span class="text-[10px] font-bold text-slate-400 uppercase">NDF Fiber</span>
+                <p class="text-xl font-heading font-bold text-slate-900 mt-1">31.2%</p>
+                <span class="text-[10px] text-emerald-700 font-semibold">Rumen-Safe</span>
+              </div>
+              <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                <span class="text-[10px] font-bold text-slate-400 uppercase">Ca : P Ratio</span>
+                <p class="text-xl font-heading font-bold text-slate-900 mt-1">2.0 : 1</p>
+                <span class="text-[10px] text-emerald-700 font-semibold">Bioavailable</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Additives & Bolus -->
+          <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-heading text-lg font-bold text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-600">medication</span>
+                Active Feed Additives &amp; Bolus History
+              </h3>
+              <button (click)="showAddBolusModal.set(true)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">
+                Add Entry
+              </button>
+            </div>
+            <div class="space-y-3">
+              <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center">
+                <div>
+                  <h4 class="font-bold text-slate-900 text-sm">Slow-Release Trace Mineral Bolus</h4>
+                  <p class="text-xs text-slate-500">Selenium (3 mg/d) + Organic Copper (140 mg/d) + Cobalt</p>
+                  <p class="text-[11px] font-mono text-slate-400 mt-1">Administered Nov 12, 2024 • Valid through October 2025 (~220 days remaining)</p>
+                </div>
+                <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-mono text-xs font-bold">In Reticulum</span>
+              </div>
+              <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center">
+                <div>
+                  <h4 class="font-bold text-slate-900 text-sm">Hoof Integrity Biotin (Premix Fortifier)</h4>
+                  <p class="text-xs text-slate-500">20 mg pure D-biotin per animal/day for digital dermatitis prevention</p>
+                </div>
+                <span class="px-2.5 py-1 rounded-full bg-slate-200 text-slate-800 font-mono text-xs font-bold">20.0 mg/d</span>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Right 5 cols: Feeder Station Telemetry -->
+        <div class="lg:col-span-5 space-y-6">
+          <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+              <div>
+                <span class="text-[10px] font-bold text-emerald-700 uppercase">Telemetric Station</span>
+                <h3 class="font-heading text-lg font-bold text-slate-900">Smart Feeder Station #04</h3>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">RFID ONLINE</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <div class="p-3 bg-slate-50 rounded-xl">
+                <span class="text-[10px] font-bold text-slate-400 uppercase">Daily DMI</span>
+                <p class="text-xl font-heading font-bold text-slate-900 mt-0.5">{{ feedingRationsData()?.dailyDryMatterIntakeKg ?? 10.6 }} kg</p>
+                <span class="text-[10px] text-slate-400">Dry Matter Intake</span>
+              </div>
+              <div class="p-3 bg-slate-50 rounded-xl">
+                <span class="text-[10px] font-bold text-slate-400 uppercase">Water Intake</span>
+                <p class="text-xl font-heading font-bold text-slate-900 mt-0.5">{{ feedingRationsData()?.waterIntakeLitersPerDay ?? 45.0 }} L/d</p>
+                <span class="text-[10px] text-emerald-700 font-semibold">Optimal hydration</span>
+              </div>
+              <div class="p-3 bg-slate-50 rounded-xl">
+                <span class="text-[10px] font-bold text-slate-400 uppercase">Refusal (Orts)</span>
+                <p class="text-xl font-heading font-bold text-emerald-700 mt-0.5">2.1%</p>
+                <span class="text-[10px] text-slate-400">Threshold: &lt; 3.0%</span>
+              </div>
+              <div class="p-3 bg-slate-50 rounded-xl">
+                <span class="text-[10px] font-bold text-slate-400 uppercase">Chewing Index</span>
+                <p class="text-xl font-heading font-bold text-slate-900 mt-0.5">{{ animal().ruminationMinutes }} min</p>
+                <span class="text-[10px] text-emerald-700 font-semibold">Healthy rumination</span>
+              </div>
+            </div>
+
+            <!-- IOFC card -->
+            <div class="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-2 text-xs">
+              <div class="flex justify-between font-semibold text-slate-700">
+                <span>Daily Feed Expenditure</span>
+                <span class="font-mono">${{ (feedingRationsData()?.dailyFeedCost ?? 3.85).toFixed(2) }} / day</span>
+              </div>
+              <div class="flex justify-between font-semibold text-slate-700">
+                <span>Feed Conversion Ratio</span>
+                <span class="font-mono">{{ feedingRationsData()?.feedConversionRatio || '1.42 (Optimal)' }}</span>
+              </div>
+              <div class="flex justify-between font-bold text-emerald-800 pt-2 border-t border-slate-200">
+                <span>Management Cohort</span>
+                <span class="font-mono text-sm">{{ feedingRationsData()?.managementCohort || animal().holdingName }}</span>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- TAB 3: BREEDING & PEDIGREE -->
+  @if (activeTab() === 'breeding') {
+    <div class="space-y-6">
+      <!-- 1. Reproductive & Registry Overview bound to GET /api/v1/livestock/{id}/breeding-pedigree -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-[#1B4332] text-white flex items-center justify-center">
+              <span class="material-symbols-outlined">diversity_2</span>
+            </div>
+            <div>
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Studbook &amp; Reproductive Telemetry</span>
+              <h2 class="font-heading text-xl font-bold text-slate-900">Reproductive Class &amp; Pedigree Registry</h2>
+            </div>
+          </div>
+          <div class="flex items-center gap-4 bg-slate-50 px-4 py-2 rounded-xl border border-slate-200">
+            <div>
+              <span class="text-[10px] text-slate-400 font-bold block uppercase">Association Reg #</span>
+              <span class="text-sm font-mono font-bold text-[#1B4332]">{{ breedingPedigreeData()?.associationRegNumber || 'N/A' }}</span>
+            </div>
+            <div class="h-8 w-px bg-slate-200"></div>
+            <div>
+              <span class="text-[10px] text-slate-400 font-bold block uppercase">TSU Sample Barcode</span>
+              <span class="text-sm font-mono font-bold text-slate-800">{{ breedingPedigreeData()?.tsuSampleBarcode || 'N/A' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+            <span class="text-[10px] font-bold text-slate-400 uppercase">Reproductive Class</span>
+            <div class="font-bold text-slate-900 mt-1 truncate">{{ breedingPedigreeData()?.reproductiveClass || 'HEIFER_REPLACEMENT' }}</div>
+            <span class="text-xs font-mono text-emerald-700">Gender: {{ animal().gender }}</span>
+          </div>
+          <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+            <span class="text-[10px] font-bold text-slate-400 uppercase">Conception Method</span>
+            <div class="font-bold text-slate-900 mt-1">{{ breedingPedigreeData()?.conceptionMethod || 'AI_SEXED_SEMEN' }}</div>
+            <span class="text-xs text-slate-500">Verified Stud Protocol</span>
+          </div>
+          <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+            <span class="text-[10px] font-bold text-slate-400 uppercase">Breed Registry</span>
+            <div class="font-bold text-emerald-700 mt-1 truncate">{{ breedingPedigreeData()?.breedRegistry || 'Botswana Beef & Dairy Studbook' }}</div>
+            <span class="text-xs text-slate-500">Official Lineage Record</span>
+          </div>
+          <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+            <span class="text-[10px] font-bold text-slate-400 uppercase">Genomic Barcode</span>
+            <div class="font-bold text-slate-900 font-mono mt-1">{{ breedingPedigreeData()?.tsuSampleBarcode || 'TSU-BW-5E38A3' }}</div>
+            <span class="text-xs text-slate-500">SNP Parentage Verified</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Genomic Profile & EPDs -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Genomic Panel Verified</span>
+            <h3 class="font-heading text-xl font-bold text-slate-900">Genomic Profile &amp; Expected Progeny Differences (EPDs)</h3>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full font-bold text-xs">Genomic Verified</span>
+          </div>
+        </div>
+
+        @if (epdEntries().length > 0) {
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            @for (trait of epdEntries(); track trait.name) {
+              <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="font-bold text-slate-500 uppercase">{{ trait.name }}</span>
+                  <span class="font-bold text-emerald-700">Verified</span>
+                </div>
+                <p class="text-xl font-heading font-bold text-slate-900 mt-1">{{ trait.value }}</p>
+                <div class="w-full bg-slate-200 h-1.5 rounded-full mt-3 overflow-hidden">
+                  <div class="bg-emerald-600 h-full" style="width: 90%"></div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+              <span class="font-bold text-xs text-slate-500 uppercase">Birth Weight (BW)</span>
+              <p class="text-xl font-heading font-bold text-slate-900 mt-1">-1.2 lbs (Low Calving Ease Risk)</p>
+            </div>
+            <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+              <span class="font-bold text-xs text-slate-500 uppercase">Weaning Weight (WW)</span>
+              <p class="text-xl font-heading font-bold text-slate-900 mt-1">+68 lbs (Top 10%)</p>
+            </div>
+            <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+              <span class="font-bold text-xs text-slate-500 uppercase">Yearling Weight (YW)</span>
+              <p class="text-xl font-heading font-bold text-slate-900 mt-1">+118 lbs (Top 15%)</p>
+            </div>
+            <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+              <span class="font-bold text-xs text-slate-500 uppercase">Marbling (MARB)</span>
+              <p class="text-xl font-heading font-bold text-slate-900 mt-1">+0.95 (High Intramuscular Fat)</p>
+            </div>
+          </div>
+        }
+      </section>
+
+      <!-- 3. Pedigree Tree & Progeny -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-heading text-lg font-bold text-slate-900">Ancestral Pedigree Lineage</h3>
+          <span class="font-mono text-xs bg-slate-100 px-3 py-1 rounded-full text-slate-600">{{ breedingPedigreeData()?.breedRegistry || 'Official Studbook' }}</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-4 rounded-xl bg-[#1B4332] text-white">
+            <span class="text-[10px] uppercase font-bold text-emerald-300">Target Subject (Gen 0)</span>
+            <h4 class="font-bold text-lg mt-1">{{ animal().name }} ({{ animal().tag }})</h4>
+            <p class="text-xs font-mono text-slate-300">{{ breedingPedigreeData()?.associationRegNumber || animal().taxId }} • {{ animal().gender }}</p>
+            <p class="text-xs font-bold text-emerald-300 mt-3">{{ animal().breed }}</p>
+          </div>
+
+          <div class="space-y-3 md:col-span-2">
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="text-[10px] font-bold text-emerald-700 uppercase">{{ breedingPedigreeData()?.sire?.roleLabel || 'SIRE (PATERNAL)' }}</span>
+              <h5 class="font-bold text-slate-900 text-base mt-0.5">{{ breedingPedigreeData()?.sire?.name || 'Registered Herd Sire' }}</h5>
+              <p class="text-xs font-mono text-slate-500 mt-0.5">
+                Tag / Reg: <strong>{{ breedingPedigreeData()?.sire?.registrationOrTagNumber || '#SIRE-001' }}</strong>
+                • Breed: {{ breedingPedigreeData()?.sire?.breedName || animal().breedName }}
+              </p>
+            </div>
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <span class="text-[10px] font-bold text-amber-800 uppercase">{{ breedingPedigreeData()?.dam?.roleLabel || 'DAM (MATERNAL)' }}</span>
+              <h5 class="font-bold text-slate-900 text-base mt-0.5">{{ breedingPedigreeData()?.dam?.name || 'Registered Herd Dam' }}</h5>
+              <p class="text-xs font-mono text-slate-500 mt-0.5">
+                Tag / Reg: <strong>{{ breedingPedigreeData()?.dam?.registrationOrTagNumber || '#DAM-001' }}</strong>
+                • Breed: {{ breedingPedigreeData()?.dam?.breedName || animal().breedName }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  }
+
+  <!-- TAB 4: ACCOUNTING & VALUATION -->
+  @if (activeTab() === 'accounting') {
+    <div class="space-y-6">
+      <!-- 4 Balance Sheet tiles bound to GET /api/v1/livestock/{id}/accounting-valuation -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+          <div class="flex justify-between items-center text-xs font-bold text-slate-500 mb-1">
+            <span>ACQUISITION / CAP COST</span>
+            <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-800 text-[10px]">BOOK BASIS</span>
+          </div>
+          <p class="text-3xl font-heading font-bold text-slate-900 mt-1">${{ (accountingValuationData()?.acquisitionOrCapCost ?? 1200).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</p>
+          <div class="mt-4 pt-2 border-t border-slate-100 flex justify-between text-xs text-slate-500">
+            <span>Asset Code</span>
+            <span class="font-bold text-[#1B4332] font-mono">{{ animal().taxId }}</span>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+          <div class="flex justify-between items-center text-xs font-bold text-slate-500 mb-1">
+            <span>CURRENT FAIR VALUE</span>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px]">IAS 41 FMV</span>
+          </div>
+          <p class="text-3xl font-heading font-bold text-[#1B4332] mt-1">${{ (accountingValuationData()?.currentFairValue ?? 1360).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</p>
+          <div class="mt-4 pt-2 border-t border-slate-100 flex justify-between text-xs text-slate-500">
+            <span>Market Price / kg</span>
+            <span class="font-bold text-slate-900 font-mono">${{ (accountingValuationData()?.marketPricePerKg ?? 3.20).toFixed(2) }} / kg</span>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+          <div class="flex justify-between items-center text-xs font-bold text-slate-500 mb-1">
+            <span>UNREALIZED GAIN / LOSS</span>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px]">NET DELTA</span>
+          </div>
+          <p class="text-3xl font-heading font-bold mt-1" [class]="(accountingValuationData()?.unrealizedGainLoss ?? 160) >= 0 ? 'text-emerald-700' : 'text-red-600'">
+            {{ (accountingValuationData()?.unrealizedGainLoss ?? 160) >= 0 ? '+' : '' }}${{ (accountingValuationData()?.unrealizedGainLoss ?? 160).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+          </p>
+          <div class="mt-4 pt-2 border-t border-slate-100 flex justify-between text-xs text-slate-500">
+            <span>Last Valuation</span>
+            <span class="font-bold text-slate-900 font-mono">{{ accountingValuationData()?.lastValuationDate || 'Today' }}</span>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+          <div class="flex justify-between items-center text-xs font-bold text-slate-500 mb-1">
+            <span>MAINTENANCE EXPENSE</span>
+            <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-800 text-[10px]">ACCUMULATED</span>
+          </div>
+          <p class="text-3xl font-heading font-bold text-slate-900 mt-1">${{ (accountingValuationData()?.accumulatedMaintenanceExpense ?? 340).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</p>
+          <div class="mt-4 pt-2 border-t border-slate-100 flex justify-between text-xs text-slate-500">
+            <span>Status</span>
+            <span class="font-bold text-emerald-700 font-mono">AUDITED</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Valuation Method Summary -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-100">
+          <div>
+            <h3 class="font-heading text-lg font-bold text-slate-900">Biological Asset Valuation Method</h3>
+            <p class="text-xs text-slate-500">{{ accountingValuationData()?.valuationMethod || 'IAS 41 Biological Asset Fair Value Less Cost to Sell' }}</p>
+          </div>
+          <span class="font-mono text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1 rounded-lg font-semibold">
+            Valued: {{ accountingValuationData()?.lastValuationDate || 'Current Period' }}
+          </span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 text-xs">
+          <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-100">
+            <span class="text-slate-400 uppercase font-bold block text-[10px]">Current Live Weight</span>
+            <span class="text-lg font-bold text-slate-900 font-mono mt-1 block">{{ animal().weight }} kg</span>
+          </div>
+          <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-100">
+            <span class="text-slate-400 uppercase font-bold block text-[10px]">Market Rate per Kg</span>
+            <span class="text-lg font-bold text-slate-900 font-mono mt-1 block">${{ (accountingValuationData()?.marketPricePerKg ?? 3.20).toFixed(2) }} / kg</span>
+          </div>
+          <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-100">
+            <span class="text-slate-400 uppercase font-bold block text-[10px]">Net Fair Value</span>
+            <span class="text-lg font-bold text-emerald-700 font-mono mt-1 block">${{ (accountingValuationData()?.currentFairValue ?? 1360).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Itemized Ledger Table -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div>
+            <h3 class="font-heading text-lg font-bold text-slate-900">Itemized Cost &amp; Revenue Ledger</h3>
+            <p class="text-xs text-slate-500">Chronological transaction logs attributed directly to Animal ID {{ animal().tag }}</p>
+          </div>
+          <button (click)="exportLedgerCsv()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+            <span class="material-symbols-outlined text-sm">download</span>
+            <span>Export Ledger CSV</span>
+          </button>
+        </div>
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs sm:text-sm">
+            <thead class="bg-slate-50 font-bold uppercase text-[11px] text-slate-500 border-b border-slate-200">
+              <tr>
+                <th class="py-3 px-4">Date</th>
+                <th class="py-3 px-4">Category</th>
+                <th class="py-3 px-4">Description</th>
+                <th class="py-3 px-4">Cost Center</th>
+                <th class="py-3 px-4 text-right">Amount</th>
+                <th class="py-3 px-4 text-right">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              @for (item of ledgerTransactions(); track item.date + item.description) {
+                <tr class="hover:bg-slate-50/70 transition-colors">
+                  <td class="py-3 px-4 font-mono text-xs">{{ item.date }}</td>
+                  <td class="py-3 px-4">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" [class]="item.isCredit ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'">
+                      {{ item.category }}
+                    </span>
+                  </td>
+                  <td class="py-3 px-4">
+                    <div class="font-semibold text-slate-900">{{ item.description }}</div>
+                    <div class="text-[11px] text-slate-400">{{ item.subtext }}</div>
+                  </td>
+                  <td class="py-3 px-4 font-mono text-xs text-slate-500">{{ item.costCenter }}</td>
+                  <td class="py-3 px-4 text-right font-mono font-bold" [class]="item.isCredit ? 'text-emerald-700' : 'text-slate-800'">
+                    {{ item.isCredit ? '+' : '-' }}${{ item.amount.toFixed(2) }}
+                  </td>
+                  <td class="py-3 px-4 text-right">
+                    <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[10px] font-bold">{{ item.status }}</span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  }
+
+  <!-- TAB 5: TELEMETRY & RUMINATION -->
+  @if (activeTab() === 'telemetry') {
+    <div class="space-y-6">
+      <!-- 4 Diagnostics Hardware cards bound to GET /api/v1/livestock/{id}/telemetry-rumination -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+          <div class="flex justify-between items-center mb-2">
+            <span class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-emerald-600 text-sm">watch</span>
+              Smart Collar
+            </span>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">Connected</span>
+          </div>
+          <p class="text-xl font-heading font-bold text-slate-900 font-mono truncate">{{ telemetryRuminationData()?.smartCollarSerial || 'COLLAR-5E38A' }}</p>
+          <div class="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden">
+            <div class="bg-emerald-600 h-full rounded-full" style="width: 94%"></div>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-2 font-mono">Gateway: {{ telemetryRuminationData()?.gatewayIdentifier || 'GW-LORA-NORTH-01' }}</p>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+          <div class="flex justify-between items-center mb-2">
+            <span class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-emerald-600 text-sm">sensors</span>
+              Rumen Bolus
+            </span>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">In Rumen</span>
+          </div>
+          <p class="text-xl font-heading font-bold text-slate-900 font-mono truncate">{{ telemetryRuminationData()?.bolusSerial || 'BOLUS-9ec1' }}</p>
+          <div class="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden">
+            <div class="bg-emerald-600 h-full rounded-full" style="width: 88%"></div>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-2 font-mono">Rumen pH: {{ telemetryRuminationData()?.rumenPh ?? 6.4 }} pH</p>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+          <div class="flex justify-between items-center mb-2">
+            <span class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-emerald-600 text-sm">favorite</span>
+              Heart Rate &amp; Steps
+            </span>
+            <span class="font-mono text-emerald-700 text-xs font-bold">{{ telemetryRuminationData()?.heartRateBpm ?? 68 }} BPM</span>
+          </div>
+          <p class="text-2xl font-heading font-bold text-slate-900">{{ (telemetryRuminationData()?.dailyActivitySteps ?? 4180) | number }} <span class="text-xs font-normal text-slate-500">steps/d</span></p>
+          <p class="text-[11px] text-slate-500 mt-2">3-Axis Accelerometer Active</p>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+          <div class="flex justify-between items-center mb-2">
+            <span class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-emerald-600 text-sm">schedule</span>
+              Daily Rumination
+            </span>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">Optimal</span>
+          </div>
+          <p class="text-2xl font-heading font-bold text-slate-900">{{ telemetryRuminationData()?.dailyRuminationMinutes ?? animal().ruminationMinutes }} <span class="text-xs font-normal text-slate-500">min/day</span></p>
+          <p class="text-[11px] text-slate-500 mt-2">Acoustic collar sensor verified</p>
+        </div>
+      </div>
+
+      <!-- Biometrics: Temp, pH, Heart Rate -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+          <div class="flex justify-between items-center mb-2">
+            <span class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-emerald-600 text-sm">thermostat</span>
+              Rumen Core Temp
+            </span>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">Euthermic</span>
+          </div>
+          <p class="text-3xl font-heading font-bold text-slate-900">{{ telemetryRuminationData()?.bodyTemperatureC ?? 38.6 }}°C</p>
+          <p class="text-xs text-slate-500 mt-2 leading-relaxed">Within verified physiological window (38.5°C – 39.2°C). Zero febrile elevation.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+          <div class="flex justify-between items-center mb-2">
+            <span class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-emerald-600 text-sm">science</span>
+              Rumen pH Buffer
+            </span>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">Normal Buffer</span>
+          </div>
+          <p class="text-3xl font-heading font-bold text-slate-900">{{ telemetryRuminationData()?.rumenPh ?? 6.4 }} pH</p>
+          <p class="text-xs text-slate-500 mt-2 leading-relaxed">Volatile Fatty Acid neutralization index steady via bolus sensor {{ telemetryRuminationData()?.bolusSerial || '' }}.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+          <div class="flex justify-between items-center mb-2">
+            <span class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-emerald-600 text-sm">monitor_heart</span>
+              Cardiac Telemetry
+            </span>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">Comfort Zone</span>
+          </div>
+          <p class="text-3xl font-heading font-bold text-slate-900">{{ telemetryRuminationData()?.heartRateBpm ?? 68 }} <span class="text-xs font-normal text-slate-500">BPM</span></p>
+          <p class="text-xs text-slate-500 mt-2 leading-relaxed">Gateway {{ telemetryRuminationData()?.gatewayIdentifier || 'GW-LORA-NORTH-01' }} active. No thermal distress identified.</p>
+        </div>
+      </div>
+
+      <!-- 24-Hour Circadian Rumination Graph -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="font-heading text-lg font-bold text-slate-900">24-Hour Circadian Rumination Rhythm</h3>
+              <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">Live Stream</span>
+            </div>
+            <p class="text-xs text-slate-500">Hourly chewing minutes captured via acoustic throat mic ({{ telemetryRuminationData()?.smartCollarSerial || 'COLLAR' }}) &amp; bolus ({{ telemetryRuminationData()?.bolusSerial || 'BOLUS' }})</p>
+          </div>
+          <button (click)="forcePollTelemetry()" class="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition cursor-pointer flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">sync</span>
+            <span>Sync Telemetry</span>
+          </button>
+        </div>
+
+        <div class="h-40 w-full flex items-end gap-1.5 pt-4">
+          <div class="flex-1 bg-[#1B4332]/80 rounded-t-sm" style="height: 68%" title="00:00 - 34m"></div>
+          <div class="flex-1 bg-[#1B4332] rounded-t-sm" style="height: 92%" title="01:00 - 46m"></div>
+          <div class="flex-1 bg-[#1B4332] rounded-t-sm" style="height: 96%" title="02:00 - 48m"></div>
+          <div class="flex-1 bg-[#1B4332] rounded-t-sm" style="height: 90%" title="03:00 - 45m"></div>
+          <div class="flex-1 bg-[#1B4332] rounded-t-sm" style="height: 84%" title="04:00 - 42m"></div>
+          <div class="flex-1 bg-[#1B4332]/40 rounded-t-sm" style="height: 24%" title="05:00 - 12m"></div>
+          <div class="flex-1 bg-[#1B4332]/30 rounded-t-sm" style="height: 16%" title="06:00 - 8m"></div>
+          <div class="flex-1 bg-[#1B4332]/30 rounded-t-sm" style="height: 14%" title="07:00 - 7m"></div>
+          <div class="flex-1 bg-[#1B4332]/70 rounded-t-sm" style="height: 52%" title="08:00 - 26m"></div>
+          <div class="flex-1 bg-[#1B4332]/70 rounded-t-sm" style="height: 48%" title="09:00 - 24m"></div>
+          <div class="flex-1 bg-[#1B4332]/40 rounded-t-sm" style="height: 22%" title="10:00 - 11m"></div>
+          <div class="flex-1 bg-[#1B4332]/50 rounded-t-sm" style="height: 36%" title="11:00 - 18m"></div>
+          <div class="flex-1 bg-[#1B4332]/70 rounded-t-sm" style="height: 60%" title="12:00 - 30m"></div>
+          <div class="flex-1 bg-[#1B4332] rounded-t-sm" style="height: 88%" title="13:00 - 44m"></div>
+          <div class="flex-1 bg-[#1B4332] rounded-t-sm" style="height: 94%" title="14:00 - 47m"></div>
+          <div class="flex-1 bg-[#1B4332]/80 rounded-t-sm" style="height: 72%" title="15:00 - 36m"></div>
+          <div class="flex-1 bg-[#1B4332]/30 rounded-t-sm" style="height: 18%" title="16:00 - 9m"></div>
+          <div class="flex-1 bg-[#1B4332]/20 rounded-t-sm" style="height: 12%" title="17:00 - 6m"></div>
+          <div class="flex-1 bg-[#1B4332]/30 rounded-t-sm" style="height: 20%" title="18:00 - 10m"></div>
+          <div class="flex-1 bg-[#1B4332]/60 rounded-t-sm" style="height: 50%" title="19:00 - 25m"></div>
+          <div class="flex-1 bg-[#1B4332]/75 rounded-t-sm" style="height: 64%" title="20:00 - 32m"></div>
+          <div class="flex-1 bg-[#1B4332]/80 rounded-t-sm" style="height: 70%" title="21:00 - 35m"></div>
+          <div class="flex-1 bg-[#1B4332]/85 rounded-t-sm" style="height: 76%" title="22:00 - 38m"></div>
+          <div class="flex-1 bg-emerald-500 rounded-t-sm" style="height: 80%" title="23:00 - 40m"></div>
+        </div>
+        <div class="flex justify-between text-[10px] font-mono text-slate-400 mt-2">
+          <span>00:00 (Midnight)</span>
+          <span>04:00 (Rest Peak)</span>
+          <span>08:00 (Pasture)</span>
+          <span>12:00</span>
+          <span>14:00 (Siesta)</span>
+          <span>18:00 (Milking)</span>
+          <span>22:00</span>
+          <span>23:59</span>
+        </div>
+      </section>
+
+      <!-- SECTION: Daily Gate Logs & RFID Scans Stream -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-emerald-600 animate-pulse"></span>
+              <h3 class="font-heading text-xl font-bold text-slate-900">Daily Gate Logs &amp; RFID Scans Stream</h3>
+              <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold font-mono">
+                LIVE CHOKEPOINT TRACKING
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Automated antenna gateway scans, pasture transitions, and RFID portal timestamps for {{ animal().name }} ({{ animal().tag }})
+            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <button (click)="quickSimulateScan('GATE-04', 'Paddock D-3 Pasture Gate', 'ENTRY', 'Solar pasture gate unlocked • Inbound grazing transit')" 
+                    class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer">
+              <span class="material-symbols-outlined text-[15px]">sensors</span>
+              <span>Quick Scan: Paddock D-3</span>
+            </button>
+            <button (click)="openLogGateScan()" 
+                    class="px-4 py-2 rounded-xl bg-[#1B4332] text-white hover:bg-[#2D8055] text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
+              <span class="material-symbols-outlined text-[16px]">add_circle</span>
+              <span>Log RFID Gate Scan</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Gate Logs Table -->
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs sm:text-sm">
+            <thead class="bg-slate-50 text-slate-500 uppercase text-[11px] font-bold border-b border-slate-200">
+              <tr>
+                <th class="py-3 px-4">Timestamp</th>
+                <th class="py-3 px-4">Gate &amp; Chokepoint</th>
+                <th class="py-3 px-4">Movement &amp; Direction</th>
+                <th class="py-3 px-4">Reader Hardware &amp; Signal</th>
+                <th class="py-3 px-4">Automated Action / Response</th>
+                <th class="py-3 px-4 text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              @for (log of filteredGateLogs(); track log.id) {
+                <tr class="hover:bg-slate-50/70 transition-colors">
+                  <td class="py-3 px-4 font-mono text-xs text-slate-700 whitespace-nowrap">
+                    {{ log.timestamp }}
+                  </td>
+                  <td class="py-3 px-4">
+                    <div class="font-bold text-slate-900">{{ log.gateName }}</div>
+                    <span class="font-mono text-[10px] text-slate-400 bg-slate-100 px-1.5 py-0.2 rounded">{{ log.gateId }}</span>
+                  </td>
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <div class="flex items-center gap-1.5">
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                            [class]="log.movementType === 'ENTRY' ? 'bg-emerald-100 text-emerald-800' : log.movementType === 'EXIT' ? 'bg-amber-100 text-amber-800' : log.movementType === 'MILKING PARLOR' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'">
+                        {{ log.movementType }}
+                      </span>
+                      <span class="font-mono text-[10px] text-slate-500 uppercase">({{ log.direction }})</span>
+                    </div>
+                  </td>
+                  <td class="py-3 px-4">
+                    <div class="text-xs font-semibold text-slate-800">{{ log.readerModel }}</div>
+                    <div class="font-mono text-[10px] text-emerald-700 font-bold">RSSI: {{ log.signalRssi }}</div>
+                  </td>
+                  <td class="py-3 px-4">
+                    <div class="text-xs text-slate-700">{{ log.automatedAction }}</div>
+                    @if (log.weightKg) {
+                      <span class="inline-block mt-0.5 px-2 py-0.2 bg-emerald-50 text-emerald-800 font-mono text-[10px] font-bold rounded">
+                        Walkover: {{ log.weightKg }} kg
+                      </span>
+                    }
+                  </td>
+                  <td class="py-3 px-4 text-center">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                      {{ log.status }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  }
+
+  <!-- Footer -->
+  <footer class="mt-12 border-t border-slate-200 pt-4">
+    <div class="flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2">
+      <div class="flex items-center space-x-2">
+        <span>AgriPrecision FarmOS v4.12 Enterprise</span>
+        <span>•</span>
+        <span>Registered ID: {{ animal().tag }} ({{ currentAnimalUuid() }})</span>
+      </div>
+      <div>
+        <span>Telemetry sync encrypted with SHA-256 • Verified Veterinary Chain of Custody</span>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ================= MODALS ================= -->
+
+<!-- 1. Edit Profile Modal (PUT /api/v1/livestock/{id}/profile) -->
+@if (showEditProfileModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+      <div class="p-5 border-b border-slate-100 bg-[#1B4332] text-white flex items-center justify-between">
+        <h2 class="font-heading text-lg font-bold">Edit Animal Profile</h2>
+        <button (click)="showEditProfileModal.set(false)" class="text-white/70 hover:text-white cursor-pointer">
+          <span class="material-symbols-outlined text-sm">close</span>
+        </button>
+      </div>
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Animal Name</label>
+          <input type="text" [(ngModel)]="editForm.name" placeholder="Bella" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Ear Tag</label>
+            <input type="text" [(ngModel)]="editForm.earTag" placeholder="#TAG-8492" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Asset Code</label>
+            <input type="text" [(ngModel)]="editForm.assetCode" placeholder="#AG-ASSET-8492" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono text-sm">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">RFID Microchip</label>
+          <input type="text" [(ngModel)]="editForm.rfidMicrochip" placeholder="982.00018492019" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono text-sm">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Date of Birth</label>
+            <input type="date" [(ngModel)]="editForm.dateOfBirth" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Gender</label>
+            <select [(ngModel)]="editForm.gender" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+              <option value="FEMALE">FEMALE</option>
+              <option value="MALE">MALE</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+        <button (click)="showEditProfileModal.set(false)" class="px-4 py-2 text-slate-600 font-bold text-sm cursor-pointer">Cancel</button>
+        <button (click)="saveEditProfile()" [disabled]="isSubmitting()" class="px-5 py-2 bg-[#1B4332] text-white font-bold text-sm rounded-xl hover:bg-[#2D8055] transition-colors cursor-pointer">
+          {{ isSubmitting() ? 'Saving...' : 'Save Changes' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- 2. Move Location Modal (POST /api/v1/livestock/{id}/move-location) -->
+@if (showMoveLocationModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+      <div class="p-5 border-b border-slate-100 bg-[#1B4332] text-white flex items-center justify-between">
+        <h2 class="font-heading text-lg font-bold">Transfer Animal Location</h2>
+        <button (click)="showMoveLocationModal.set(false)" class="text-white/70 hover:text-white cursor-pointer">
+          <span class="material-symbols-outlined text-sm">close</span>
+        </button>
+      </div>
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Destination Holding / Kraal</label>
+          <select [ngModel]="locationForm.holdingId" (ngModelChange)="onHoldingSelectChange($event)" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+            @for (h of availableHoldings(); track h.id) {
+              <option [value]="h.id">{{ h.name || h.holdingName || h.kraalName || h.id }}</option>
+            }
+            @if (availableHoldings().length === 0) {
+              <option value="h2000000-0000-0000-0000-000000000002">Kraal 02 (Dairy &amp; Calving Unit)</option>
+              <option value="h2000000-0000-0000-0000-000000000001">Kraal 01 (Primary Beef Lot)</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Destination Pen</label>
+          <select [(ngModel)]="locationForm.penId" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+            @for (p of availablePens(); track p.id) {
+              <option [value]="p.id">{{ p.name || p.penName || p.id }}</option>
+            }
+            @if (availablePens().length === 0) {
+              <option value="p2000000-0000-0000-0000-000000000001">Pen 01 (North Calving Bay)</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Transfer Reason</label>
+          <input type="text" [(ngModel)]="locationForm.reason" placeholder="Rotational grazing transfer" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+        </div>
+      </div>
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+        <button (click)="showMoveLocationModal.set(false)" class="px-4 py-2 text-slate-600 font-bold text-sm cursor-pointer">Cancel</button>
+        <button (click)="saveMoveLocation()" [disabled]="isSubmitting()" class="px-5 py-2 bg-emerald-700 text-white font-bold text-sm rounded-xl hover:bg-emerald-800 transition-colors cursor-pointer">
+          {{ isSubmitting() ? 'Transferring...' : 'Confirm Transfer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- 3. Update Status Modal (PATCH /api/v1/livestock/{id}/status) -->
+@if (showUpdateStatusModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+      <div class="p-5 border-b border-slate-100 bg-[#1B4332] text-white flex items-center justify-between">
+        <h2 class="font-heading text-lg font-bold">Update Health &amp; Production Status</h2>
+        <button (click)="showUpdateStatusModal.set(false)" class="text-white/70 hover:text-white cursor-pointer">
+          <span class="material-symbols-outlined text-sm">close</span>
+        </button>
+      </div>
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Status Code</label>
+          <select [ngModel]="statusForm.status" (ngModelChange)="onStatusSelectChange($event)" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="LACTATING">LACTATING</option>
+            <option value="PREGNANT">PREGNANT</option>
+            <option value="QUARANTINED">QUARANTINED</option>
+            <option value="SOLD">SOLD</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Status Badge Text</label>
+          <input type="text" [(ngModel)]="statusForm.statusBadgeText" placeholder="ACTIVE CAPITAL LIVESTOCK" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Audit Notes</label>
+          <textarea [(ngModel)]="statusForm.notes" rows="2" placeholder="Verified active in herd audit" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm"></textarea>
+        </div>
+      </div>
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+        <button (click)="showUpdateStatusModal.set(false)" class="px-4 py-2 text-slate-600 font-bold text-sm cursor-pointer">Cancel</button>
+        <button (click)="saveUpdateStatus()" [disabled]="isSubmitting()" class="px-5 py-2 bg-[#1B4332] text-white font-bold text-sm rounded-xl hover:bg-[#2D8055] transition-colors cursor-pointer">
+          {{ isSubmitting() ? 'Updating...' : 'Save Status' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- 4. Add Vaccine Modal (POST /api/v1/livestock/{id}/vaccinations) -->
+@if (showAddVaccineModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+      <div class="p-5 border-b border-slate-100 bg-[#1B4332] text-white flex items-center justify-between">
+        <h2 class="font-heading text-lg font-bold">Add Immunization Record</h2>
+        <button (click)="showAddVaccineModal.set(false)" class="text-white/70 hover:text-white cursor-pointer">
+          <span class="material-symbols-outlined text-sm">close</span>
+        </button>
+      </div>
+      <div class="p-6 space-y-3.5">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Vaccine Name</label>
+          <input type="text" [(ngModel)]="newVaccineForm.vaccineName" placeholder="BVD Type 1 & 2" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Vaccine Subtitle / Shield</label>
+          <input type="text" [(ngModel)]="newVaccineForm.vaccineSubtitle" placeholder="Bovine Viral Diarrhea Shield" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Date Administered</label>
+            <input type="date" [(ngModel)]="newVaccineForm.dateAdministered" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Administered By</label>
+            <input type="text" [(ngModel)]="newVaccineForm.administeredBy" placeholder="Dr. Sarah Miller" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Dosage</label>
+            <input type="text" [(ngModel)]="newVaccineForm.dosage" placeholder="2 ml Sub-Q" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Lot Number</label>
+            <input type="text" [(ngModel)]="newVaccineForm.lotNumber" placeholder="#BVD-889" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono text-sm">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Shield Status</label>
+          <select [(ngModel)]="newVaccineForm.status" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+            <option value="ACTIVE_SHIELD">ACTIVE_SHIELD</option>
+            <option value="DUE_SOON">DUE_SOON</option>
+            <option value="OVERDUE">OVERDUE</option>
+          </select>
+        </div>
+      </div>
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+        <button (click)="showAddVaccineModal.set(false)" class="px-4 py-2 text-slate-600 font-bold text-sm cursor-pointer">Cancel</button>
+        <button (click)="saveAddVaccine()" [disabled]="isSubmitting()" class="px-5 py-2 bg-emerald-700 text-white font-bold text-sm rounded-xl hover:bg-emerald-800 transition-colors cursor-pointer">
+          {{ isSubmitting() ? 'Recording...' : 'Record Vaccine' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- 5. Schedule Upcoming Check Modal (POST /api/v1/livestock/{id}/upcoming-checks) -->
+@if (showAddCheckModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+      <div class="p-5 border-b border-slate-100 bg-[#1B4332] text-white flex items-center justify-between">
+        <h2 class="font-heading text-lg font-bold">Schedule Upcoming Health Check</h2>
+        <button (click)="showAddCheckModal.set(false)" class="text-white/70 hover:text-white cursor-pointer">
+          <span class="material-symbols-outlined text-sm">close</span>
+        </button>
+      </div>
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Scheduled Date</label>
+          <input type="date" [(ngModel)]="newCheckForm.scheduledDate" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Check Title</label>
+          <input type="text" [(ngModel)]="newCheckForm.title" placeholder="Brucellosis Testing" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Subtitle / Description</label>
+          <input type="text" [(ngModel)]="newCheckForm.subtitle" placeholder="MANDATORY ANNUAL HERD HEALTH CHECK" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Category</label>
+          <select [(ngModel)]="newCheckForm.category" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+            <option value="HEALTH_CHECK">HEALTH_CHECK</option>
+            <option value="VACCINATION">VACCINATION</option>
+            <option value="WEIGHING">WEIGHING</option>
+            <option value="HOOF_CARE">HOOF_CARE</option>
+          </select>
+        </div>
+      </div>
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+        <button (click)="showAddCheckModal.set(false)" class="px-4 py-2 text-slate-600 font-bold text-sm cursor-pointer">Cancel</button>
+        <button (click)="saveAddCheck()" [disabled]="isSubmitting()" class="px-5 py-2 bg-emerald-700 text-white font-bold text-sm rounded-xl hover:bg-emerald-800 transition-colors cursor-pointer">
+          {{ isSubmitting() ? 'Scheduling...' : 'Save Check' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- 6. Add Medical Log Modal (POST /api/v1/livestock/{id}/medical-logs) -->
+@if (showAddMedicalLogModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+      <div class="p-5 border-b border-slate-100 bg-[#1B4332] text-white flex items-center justify-between">
+        <h2 class="font-heading text-lg font-bold">Add Clinical Medical Log</h2>
+        <button (click)="showAddMedicalLogModal.set(false)" class="text-white/70 hover:text-white cursor-pointer">
+          <span class="material-symbols-outlined text-sm">close</span>
+        </button>
+      </div>
+      <div class="p-6 space-y-3.5">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Exam Title</label>
+          <input type="text" [(ngModel)]="newMedicalLogForm.title" placeholder="Routine Physical Exam" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Exam Date</label>
+            <input type="date" [(ngModel)]="newMedicalLogForm.examDate" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Severity</label>
+            <select [(ngModel)]="newMedicalLogForm.severity" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+              <option value="NORMAL">NORMAL</option>
+              <option value="LOW">LOW</option>
+              <option value="WARNING">WARNING</option>
+              <option value="CRITICAL">CRITICAL</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Clinical Notes</label>
+          <textarea [(ngModel)]="newMedicalLogForm.clinicalNotes" rows="3" placeholder="Overall health excellent. Sound dental arc and clear rumen motility sounds." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm"></textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Examiner</label>
+            <input type="text" [(ngModel)]="newMedicalLogForm.examiner" placeholder="Dr. Sarah Miller, DVM" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Clearance Status</label>
+            <input type="text" [(ngModel)]="newMedicalLogForm.clearanceStatus" placeholder="Full Commercial Milk" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+          </div>
+        </div>
+      </div>
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+        <button (click)="showAddMedicalLogModal.set(false)" class="px-4 py-2 text-slate-600 font-bold text-sm cursor-pointer">Cancel</button>
+        <button (click)="saveAddMedicalLog()" [disabled]="isSubmitting()" class="px-5 py-2 bg-emerald-700 text-white font-bold text-sm rounded-xl hover:bg-emerald-800 transition-colors cursor-pointer">
+          {{ isSubmitting() ? 'Saving...' : 'Save Medical Log' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Calendar Modal -->
+@if (showCalendarModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
+      <div class="p-5 border-b border-slate-100 bg-[#1B4332] text-white flex items-center justify-between">
+        <h2 class="font-heading text-lg font-bold">Upcoming Health Calendar</h2>
+        <button (click)="showCalendarModal.set(false)" class="text-white/70 hover:text-white cursor-pointer">
+          <span class="material-symbols-outlined text-sm">close</span>
+        </button>
+      </div>
+      <div class="p-6 space-y-3 max-h-[60vh] overflow-y-auto">
+        @for (check of upcomingChecks(); track (check.id || check.title + check.date)) {
+          <div class="p-4 rounded-xl border border-slate-200 flex items-start justify-between">
+            <div>
+              <span class="text-xs font-mono font-bold text-emerald-700">{{ check.date }}</span>
+              <h3 class="font-bold text-slate-900 text-sm mt-0.5">{{ check.title }}</h3>
+              <p class="text-xs text-slate-400 mt-0.5 uppercase tracking-wider">{{ check.subtitle || check.category }}</p>
+            </div>
+            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold" [class]="check.isUrgent ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'">
+              {{ check.completed ? 'Completed' : 'Scheduled' }}
+            </span>
+          </div>
+        }
+      </div>
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
+        <button (click)="showCalendarModal.set(false); openAddCheck()" class="px-4 py-2 bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold text-xs rounded-xl hover:bg-emerald-100 cursor-pointer flex items-center gap-1">
+          <span class="material-symbols-outlined text-sm">add</span>
+          <span>Schedule New Check</span>
+        </button>
+        <button (click)="showCalendarModal.set(false)" class="px-5 py-2 bg-[#1B4332] text-white font-bold text-sm rounded-xl cursor-pointer">Close</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Add Bolus / Additive Modal -->
+@if (showAddBolusModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+      <div class="p-5 border-b border-slate-100 bg-[#1B4332] text-white flex items-center justify-between">
+        <h2 class="font-heading text-lg font-bold">Add Feed Additive / Bolus</h2>
+        <button (click)="showAddBolusModal.set(false)" class="text-white/70 hover:text-white cursor-pointer">
+          <span class="material-symbols-outlined text-sm">close</span>
+        </button>
+      </div>
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Additive / Bolus Name</label>
+          <input type="text" [(ngModel)]="bolusForm.bolusName" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Nutrient Composition</label>
+          <input type="text" [(ngModel)]="bolusForm.composition" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
+        </div>
+      </div>
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+        <button (click)="showAddBolusModal.set(false)" class="px-4 py-2 text-slate-600 font-bold text-sm cursor-pointer">Cancel</button>
+        <button (click)="saveAddBolus()" class="px-5 py-2 bg-emerald-700 text-white font-bold text-sm rounded-xl hover:bg-emerald-800 transition cursor-pointer">Save Additive</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Log RFID Gate Scan Modal -->
+@if (showLogGateScanModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
+      <div class="p-5 border-b border-slate-100 bg-[#1B4332] text-white flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-emerald-400">sensors</span>
+          <h2 class="font-heading text-lg font-bold">Log RFID Gate Scan Event</h2>
+        </div>
+        <button (click)="showLogGateScanModal.set(false)" class="text-white/70 hover:text-white cursor-pointer">
+          <span class="material-symbols-outlined text-sm">close</span>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Target Animal &amp; RFID</label>
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center text-xs">
+            <span class="font-bold text-slate-800">{{ animal().name }} ({{ animal().tag }})</span>
+            <span class="font-mono text-emerald-700 font-bold">RFID: {{ animal().rfid }}</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Gateway Location *</label>
+            <select [(ngModel)]="newGateScanForm.gateId" 
+                    (change)="newGateScanForm.gateName = newGateScanForm.gateId === 'GATE-04' ? 'Paddock D-3 Pasture Return Gate' : newGateScanForm.gateId === 'GATE-01A' ? 'Rotary Milking Parlor Infeed' : newGateScanForm.gateId === 'GATE-01B' ? 'Rotary Milking Parlor Outfeed' : newGateScanForm.gateId === 'GATE-02' ? 'Feed Bunk Alpha Station 04' : newGateScanForm.gateId === 'GATE-07' ? 'Walkover Weigh Chute #01' : newGateScanForm.gateId === 'GATE-08' ? 'Veterinary Isolation Gate' : 'Barn B Night Enclosure Exit'"
+                    class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold">
+              <option value="GATE-04">GATE-04 - Paddock D-3 Pasture Return Gate</option>
+              <option value="GATE-01A">GATE-01A - Rotary Milking Parlor Infeed</option>
+              <option value="GATE-01B">GATE-01B - Rotary Milking Parlor Outfeed</option>
+              <option value="GATE-02">GATE-02 - Feed Bunk Alpha Station 04</option>
+              <option value="GATE-07">GATE-07 - Walkover Weigh Chute #01</option>
+              <option value="GATE-08">GATE-08 - Veterinary Isolation Gate</option>
+              <option value="GATE-09">GATE-09 - Barn B Night Enclosure Exit</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Movement Type</label>
+            <select [(ngModel)]="newGateScanForm.movementType" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold">
+              <option value="ENTRY">ENTRY (Inbound transit)</option>
+              <option value="EXIT">EXIT (Outbound transit)</option>
+              <option value="SORT CHUTE">SORT CHUTE (Automated drafting)</option>
+              <option value="MILKING PARLOR">MILKING PARLOR (Milking stall)</option>
+              <option value="WATER TROUGH">WATER TROUGH (Station intake)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Automated Gate Action / Event Description</label>
+          <input type="text" [(ngModel)]="newGateScanForm.automatedAction" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs" placeholder="e.g. Pasture latch unlocked • Inbound geofence activated">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Optional Walkover Scale Reading (kg)</label>
+          <input type="number" [(ngModel)]="newGateScanForm.weightKg" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono text-xs" placeholder="425.0">
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+        <button (click)="showLogGateScanModal.set(false)" class="px-4 py-2 text-slate-600 font-bold text-sm cursor-pointer">Cancel</button>
+        <button (click)="saveLogGateScan()" class="px-5 py-2 bg-[#1B4332] text-white font-bold text-sm rounded-xl hover:bg-[#2D8055] transition-colors cursor-pointer">
+          Record RFID Gate Scan
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,15 @@
+
+> slingshot@0.0.0 build
+> ng build
+
+❯ Building...
+✔ Building...
+Application bundle generation failed. [14.006 seconds] - 2026-07-27T21:05:37.093Z
+
+✘ [ERROR] TS1206: Decorators are not valid here. [plugin angular-compiler]
+
+    src/app/services/crop.service.ts:33:0:
+      33 │ @Injectable({ providedIn: 'root' })
+         ╵ ^
+
+

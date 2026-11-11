@@ -1,0 +1,1499 @@
+<div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+  <!-- Action / Notification Feedback Banner -->
+  @if (actionFeedback()) {
+    <div class="p-3.5 bg-emerald-900 text-emerald-100 rounded-xl text-xs font-mono font-bold flex items-center justify-between shadow-lg border border-emerald-700 animate-in fade-in duration-200">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-emerald-400 text-lg">check_circle</span>
+        <span>{{ actionFeedback() }}</span>
+      </div>
+      <button (click)="actionFeedback.set(null)" class="text-emerald-300 hover:text-white cursor-pointer">
+        <span class="material-symbols-outlined text-sm">close</span>
+      </button>
+    </div>
+  }
+
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2 mb-1 flex-wrap">
+        <a routerLink="/livestock" class="text-slate-400 hover:text-[#012d1d] transition-colors flex items-center gap-1 text-xs font-bold">
+          <span class="material-symbols-outlined text-sm">arrow_back</span>
+          <span>Back to Livestock Directory</span>
+        </a>
+        <span class="text-slate-300">&bull;</span>
+        <span class="text-xs font-mono text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded font-bold">BIO-ASSET ONBOARDING v4.2</span>
+        @if (draftId()) {
+          <span class="text-xs font-mono text-blue-800 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded font-bold flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
+            <span>Draft: #{{ draftId() }}</span>
+          </span>
+        }
+        @if (isSavingStep()) {
+          <span class="text-xs font-mono text-amber-800 bg-amber-50 px-2 py-0.5 rounded font-bold flex items-center gap-1">
+            <span class="material-symbols-outlined text-xs animate-spin">sync</span>
+            <span>Syncing Step...</span>
+          </span>
+        }
+      </div>
+      <h1 class="font-heading text-2xl font-bold text-slate-900 tracking-tight">Register New Animal &amp; Herd Enrollment</h1>
+      <p class="text-xs text-slate-500 mt-1">Multi-stage regulatory intake protocol, RFID microchip tagging, spatial kraal allocation, and IoT telemetry linking.</p>
+    </div>
+
+    <!-- Quick Action Buttons -->
+    <div class="flex items-center gap-2.5 flex-wrap">
+      <a routerLink="/livestock" class="px-4 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer">
+        <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+        <span>Cancel</span>
+      </a>
+      <button type="button" (click)="saveDraft()" class="px-4 py-2 bg-slate-100 text-slate-800 hover:bg-slate-200 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer">
+        <span class="material-symbols-outlined text-[16px]">save</span>
+        <span>Save Draft</span>
+      </button>
+      <button type="button" (click)="onSubmit()" [disabled]="isSubmitting()" class="px-5 py-2.5 bg-[#012d1d] text-white hover:bg-[#1b4332] rounded-xl text-xs font-bold shadow-md transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50">
+        <span class="material-symbols-outlined text-[18px]">verified</span>
+        <span>Enroll Animal (Issue Bio-Passport)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Step Tracker Rail with Live Linked Data Indicators -->
+  <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-3 border-b border-slate-100">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="material-symbols-outlined text-emerald-800 text-lg">format_list_numbered</span>
+        <span class="font-heading text-xs font-bold uppercase tracking-wider text-slate-700">Intake Protocol Stages</span>
+        <span class="text-[11px] font-mono font-bold bg-emerald-100 text-emerald-900 px-2.5 py-0.5 rounded-full">
+          Step {{ currentStep() }} of 5: {{ getStepTitle(currentStep()) }}
+        </span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button type="button" (click)="toggleStepMode()" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[15px]">{{ stepMode() === 'wizard' ? 'view_agenda' : 'view_carousel' }}</span>
+          <span>{{ stepMode() === 'wizard' ? 'Review All Sections' : 'Switch to Step-by-Step Wizard' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 5 Linked Step Tabs with Dynamic Real-Time Data Chips -->
+    <ol class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 text-xs">
+      @for (step of steps; track step.number) {
+        <li (click)="setStep(step.number)" 
+            [class]="currentStep() === step.number 
+              ? 'bg-emerald-50/90 border-2 border-emerald-700 shadow-sm ring-2 ring-emerald-600/20' 
+              : isStepComplete(step.number) 
+                ? 'bg-slate-50 border border-emerald-300/80 hover:bg-emerald-50/40' 
+                : 'bg-slate-50/70 border border-slate-200/60 hover:bg-slate-100'"
+            class="p-3 rounded-xl flex flex-col justify-between cursor-pointer transition-all min-h-[76px]">
+          
+          <div class="flex items-start gap-2.5">
+            <div [class]="currentStep() === step.number 
+                   ? 'bg-[#012d1d] text-white ring-2 ring-emerald-400' 
+                   : isStepComplete(step.number) 
+                     ? 'bg-emerald-700 text-white' 
+                     : 'bg-slate-200 text-slate-600'" 
+                 class="w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+              @if (isStepComplete(step.number) && currentStep() !== step.number) {
+                <span class="material-symbols-outlined text-xs">check</span>
+              } @else {
+                <span>{{ step.number }}</span>
+              }
+            </div>
+
+            <div class="flex flex-col min-w-0 flex-1">
+              <div class="flex items-center justify-between gap-1">
+                <span class="leading-tight font-bold text-slate-900 truncate text-[11px]">{{ step.label }}</span>
+                @if (currentStep() === step.number) {
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse shrink-0"></span>
+                }
+              </div>
+              <span class="font-mono text-[9px]" [class]="currentStep() === step.number ? 'text-emerald-800 font-bold' : 'text-slate-400'">
+                {{ step.sublabel }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Direct Linked Step Data Snippet Badge -->
+          <div class="mt-2 pt-1.5 border-t border-slate-200/60 flex items-center justify-between font-mono text-[10px]">
+            <span class="text-slate-600 font-medium truncate max-w-[130px]" [title]="getStepSummary(step.number)">
+              {{ getStepSummary(step.number) }}
+            </span>
+            @if (isStepComplete(step.number)) {
+              <span class="text-emerald-700 font-bold text-[9px] bg-emerald-100/80 px-1.5 py-0.2 rounded shrink-0">Ready</span>
+            } @else {
+              <span class="text-amber-600 font-bold text-[9px] bg-amber-50 px-1.5 py-0.2 rounded shrink-0">Pending</span>
+            }
+          </div>
+        </li>
+      }
+    </ol>
+  </div>
+
+  <!-- Primary Content Grid (Main Form 8 Cols + Live Bio-Passport Preview 4 Cols) -->
+  <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start mb-12">
+    <!-- LEFT 8 COLS: Detailed Intake Forms Linked Directly to Wizard Steps -->
+    <div class="xl:col-span-8 flex flex-col gap-6">
+
+      <!-- ================= STEP 1: IDENTIFICATION & PHYSICAL TAXONOMY ================= -->
+      @if (stepMode() === 'all' || currentStep() === 1) {
+        <div id="step-1" class="space-y-4">
+          <!-- Step 1 Header Callout with Mode Selection -->
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-xl">
+                  {{ managementType() === 'individual' ? 'pets' : 'layers' }}
+                </span>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded">STEP 1</span>
+                  <h3 class="font-heading text-sm font-bold text-slate-900">Registration Mode &amp; Asset Classification</h3>
+                </div>
+                <p class="text-xs text-slate-500 mt-0.5">
+                  {{ managementType() === 'individual' ? 'Individual bio-asset with unique visual ear tag and ISO 11784 RFID microchip' : 'Batch / Group enrollment (Broiler houses, Apiary bee colonies, Layer flocks, Sheep mobs)' }}
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-center bg-slate-100 p-1 rounded-xl shrink-0 self-start sm:self-auto">
+              <button type="button" 
+                      (click)="setManagementType('individual')"
+                      [class]="managementType() === 'individual' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'text-slate-500 font-medium'"
+                      class="px-3.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm text-emerald-700">pets</span>
+                <span>Individual Animal</span>
+              </button>
+              <button type="button" 
+                      (click)="setManagementType('group')"
+                      [class]="managementType() === 'group' ? 'bg-[#012d1d] text-white shadow-sm font-bold' : 'text-slate-500 font-medium'"
+                      class="px-3.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm text-emerald-300">layers</span>
+                <span>Batch / Group</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- SECTION A: Identification & Core Taxonomy -->
+          <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-emerald-700 text-xl">fingerprint</span>
+                <div>
+                  <h2 class="font-heading text-base font-bold text-slate-900">Section A: Identification &amp; Core Taxonomy</h2>
+                  <p class="text-xs text-slate-500">Official regulatory identifiers and physiological categorization</p>
+                </div>
+              </div>
+              <span class="font-mono text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-900 px-2.5 py-0.5 rounded-full">
+                Step 1 Linked Data
+              </span>
+            </div>
+
+            @if (speciesError()) {
+              <div class="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-sm text-red-600">error</span>
+                  <span>{{ speciesError() }}</span>
+                </div>
+                <button type="button" (click)="loadSpeciesFromApi()" class="px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-800 rounded-lg font-bold text-[11px] cursor-pointer">
+                  Retry
+                </button>
+              </div>
+            }
+
+            @if (breedsError()) {
+              <div class="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-sm text-red-600">warning</span>
+                  <span>{{ breedsError() }}</span>
+                </div>
+                <button type="button" (click)="loadBreedsForSpecies(form.speciesId)" class="px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-800 rounded-lg font-bold text-[11px] cursor-pointer">
+                  Retry
+                </button>
+              </div>
+            }
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Species Category (Loaded from API - Only Animals) -->
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center justify-between">
+                  <label class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                    <span>Species Category *</span>
+                    <span class="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">API: Animal Only</span>
+                  </label>
+                  @if (isLoadingSpecies()) {
+                    <span class="text-[10px] text-amber-700 font-mono flex items-center gap-1">
+                      <span class="material-symbols-outlined text-[12px] animate-spin">sync</span>
+                      <span>Loading...</span>
+                    </span>
+                  }
+                </div>
+                <select [ngModel]="form.speciesId" (ngModelChange)="onSpeciesChange($event)" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 outline-none focus:ring-1 focus:ring-emerald-600">
+                  @for (s of speciesList(); track s.id) {
+                    <option [value]="s.id">{{ s.name }} ({{ s.description || 'Livestock Animal' }})</option>
+                  }
+                </select>
+              </div>
+
+              <!-- Breed / Strain Class (Loaded dynamically from API for selected species) -->
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center justify-between">
+                  <label class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                    <span>Breed / Strain Class *</span>
+                    <span class="text-[10px] font-mono text-blue-700 bg-blue-50 px-1.5 py-0.2 rounded border border-blue-200">API Breeds</span>
+                  </label>
+                  @if (isLoadingBreeds()) {
+                    <span class="text-[10px] text-amber-700 font-mono flex items-center gap-1">
+                      <span class="material-symbols-outlined text-[12px] animate-spin">sync</span>
+                      <span>Fetching breeds...</span>
+                    </span>
+                  }
+                </div>
+                <div class="space-y-1.5">
+                  <select [ngModel]="form.breed" (ngModelChange)="onBreedSelect($event)" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 outline-none focus:ring-1 focus:ring-emerald-600">
+                    <option value="" disabled>-- Select Breed from API --</option>
+                    @for (b of breedsList(); track b.id || b.name) {
+                      <option [value]="b.name">{{ b.name }}</option>
+                    }
+                    <option value="__custom__">+ Custom / Unlisted Breed</option>
+                  </select>
+                  @if (isCustomBreed()) {
+                    <input type="text" [(ngModel)]="form.breed" class="w-full px-3 py-1.5 bg-white border border-emerald-300 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:ring-1 focus:ring-emerald-600" placeholder="Type custom breed name...">
+                  }
+                </div>
+              </div>
+
+              <!-- IF INDIVIDUAL: Electronic RFID Wand Input -->
+              @if (managementType() === 'individual') {
+                <div class="flex flex-col gap-1 md:col-span-2">
+                  <label class="text-xs font-bold text-slate-700 flex items-center justify-between">
+                    <span>Electronic RFID Microchip (ISO 11784/11785 - 15 Digits) *</span>
+                    <span class="font-mono text-[11px] text-emerald-700 font-bold">Standard 840 / NLIS Checksum</span>
+                  </label>
+                  <div class="flex items-center gap-2">
+                    <div class="relative flex-1">
+                      <span class="absolute left-3 top-2 material-symbols-outlined text-slate-400 text-lg">nfc</span>
+                      <input type="text" [(ngModel)]="form.rfid" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs font-bold text-slate-800 outline-none focus:ring-1 focus:ring-emerald-600">
+                    </div>
+                    <button type="button" (click)="autoScanRfid()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shrink-0">
+                      <span class="material-symbols-outlined text-sm text-emerald-700">contactless</span>
+                      <span>Auto-Scan Wand</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Visual Ear Tag -->
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs font-bold text-slate-700">Visual Farm Ear Tag / Notch *</label>
+                  <div class="flex items-center gap-2">
+                    <input type="text" [(ngModel)]="form.tagId" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs font-bold text-slate-800 outline-none">
+                    <select [(ngModel)]="form.earTagColor" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none">
+                      <option>Yellow (Left Ear)</option>
+                      <option>Green (Right Ear)</option>
+                      <option>White (Dual Tagged)</option>
+                      <option>Orange (Quarantine)</option>
+                      <option>Blue (Breeding Stud)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Registered Name -->
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs font-bold text-slate-700">Registered Animal Name / Alias</label>
+                  <input type="text" [(ngModel)]="form.registeredName" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 outline-none">
+                </div>
+              }
+
+              <!-- IF GROUP: Batch / Flock Fields -->
+              @if (managementType() === 'group') {
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs font-bold text-slate-700">Batch / Flock / Hive Lot ID *</label>
+                  <input type="text" [(ngModel)]="form.batchId" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs font-bold text-slate-800 outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                  <div class="flex flex-col gap-1">
+                    <label class="text-xs font-bold text-slate-700">Quantity Count *</label>
+                    <input type="number" [(ngModel)]="form.quantity" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs font-bold text-slate-800 outline-none">
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="text-xs font-bold text-slate-700">Unit Type</label>
+                    <select [(ngModel)]="form.unit" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none">
+                      <option value="Birds (Broilers)">Birds (Broilers)</option>
+                      <option value="Birds (Layers)">Birds (Layers)</option>
+                      <option value="Hives (Bee Colonies)">Hives (Bee Colonies)</option>
+                      <option value="Head (Sheep Mob)">Head (Sheep Mob)</option>
+                      <option value="Head (Swine Batch)">Head (Swine Batch)</option>
+                      <option value="Fish (Fingerlings)">Fish (Fingerlings)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="flex flex-col gap-1 md:col-span-2">
+                  <label class="text-xs font-bold text-slate-700">Production Purpose / Harvest Objective</label>
+                  <input type="text" [(ngModel)]="form.groupPurpose" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 outline-none" placeholder="e.g. Broiler Meat Production, Spring Honey Flow, Egg Layers">
+                </div>
+              }
+
+              <!-- Sex / Reproductive Class -->
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold text-slate-700">Sex &amp; Reproductive Class</label>
+                <select [(ngModel)]="form.sex" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 outline-none">
+                  @if (managementType() === 'individual') {
+                    <option>Heifer (Maiden / Open)</option>
+                    <option>Heifer (Confirmed Pregnant)</option>
+                    <option>Cow / Mature Dam</option>
+                    <option>Bull / Breeding Sire</option>
+                    <option>Steer (Castrated Male)</option>
+                    <option>Suckling Calf</option>
+                  } @else {
+                    <option>Mixed Flock (Straight Run 50/50)</option>
+                    <option>Layer Pullets (100% Female)</option>
+                    <option>Queen Colony with Worker Brood</option>
+                    <option>Ewe Mob with Lambs</option>
+                    <option>Feeder Swine Batch</option>
+                  }
+                </select>
+              </div>
+
+              <!-- Date of Birth / Inception -->
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center justify-between">
+                  <label class="text-xs font-bold text-slate-700">{{ managementType() === 'individual' ? 'Date of Birth' : 'Batch Placement / Hatch Date' }}</label>
+                  <span class="font-mono text-[10px] text-emerald-700 font-bold">AGE: 15.2 MONTHS</span>
+                </div>
+                <input type="date" [(ngModel)]="form.birthDate" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-800 outline-none">
+              </div>
+
+              <!-- Birth Type -->
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold text-slate-700">Birth / Delivery Type</label>
+                <select [(ngModel)]="form.birthType" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 outline-none">
+                  <option value="Single">Single Birth</option>
+                  <option value="Twin">Twin Birth</option>
+                  <option value="Triplet">Triplet / Multi-Lamb</option>
+                  <option value="Embryo Transfer">Embryo Transfer Recipient</option>
+                  <option value="Incubator Batch">Incubator Hatchery Batch</option>
+                </select>
+              </div>
+
+              <!-- Polled / Horn Status -->
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold text-slate-700">Polled / Horn Status</label>
+                <select [(ngModel)]="form.polledStatus" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 outline-none">
+                  <option value="Naturally Polled (Homozygous)">Naturally Polled (Homozygous)</option>
+                  <option value="Naturally Polled (Heterozygous)">Naturally Polled (Heterozygous)</option>
+                  <option value="Horned">Horned</option>
+                  <option value="Dehorned / Disbudded">Dehorned / Disbudded</option>
+                  <option value="Scurs Present">Scurs Present</option>
+                  <option value="Not Applicable">Not Applicable (Poultry/Bees)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Animal / Bio-Asset Image Upload Card -->
+            <div class="p-4 bg-slate-50/80 border border-slate-200/90 rounded-2xl flex flex-col gap-3">
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-emerald-700 text-base">photo_camera</span>
+                  <span>Animal / Bio-Asset Visual Registry Photo</span>
+                  <span class="text-[10px] font-mono text-emerald-800 bg-emerald-100/70 px-2 py-0.5 rounded-full font-bold">Uploadable</span>
+                </label>
+                @if (uploadedPhotoUrl()) {
+                  <span class="text-[11px] font-mono font-bold text-emerald-700 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-xs">check_circle</span>
+                    Custom Photo Attached
+                  </span>
+                }
+              </div>
+
+              <!-- Hidden Native File Input -->
+              <input type="file" 
+                     id="animalPhotoInput"
+                     #photoInput
+                     (change)="onFileSelected($event)" 
+                     accept="image/png,image/jpeg,image/webp,image/gif"
+                     class="hidden">
+
+              <!-- Drag and drop zone -->
+              <div (dragover)="onDragOver($event)"
+                   (dragleave)="onDragLeave($event)"
+                   (drop)="onFileDropped($event)"
+                   class="relative border-2 border-dashed rounded-xl p-4 transition-all duration-200 flex flex-col sm:flex-row items-center gap-4 cursor-pointer"
+                   [class.border-emerald-500]="isDraggingOver()"
+                   [class.bg-emerald-50/50]="isDraggingOver()"
+                   [class.border-slate-300]="!isDraggingOver()"
+                   [class.bg-white]="!isDraggingOver()"
+                   (click)="triggerFileInput()">
+                
+                <!-- Thumbnail Preview -->
+                <div class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-lg overflow-hidden shrink-0 border border-slate-200 shadow-xs bg-slate-100">
+                  <img [src]="assetPhotoUrl()" 
+                       alt="Animal Photo" 
+                       class="w-full h-full object-cover" 
+                       referrerpolicy="no-referrer">
+                  @if (uploadedPhotoUrl()) {
+                    <span class="absolute bottom-1 right-1 bg-emerald-700 text-white rounded-full p-0.5 shadow" title="Uploaded image attached">
+                      <span class="material-symbols-outlined text-[13px] block">verified</span>
+                    </span>
+                  }
+                </div>
+
+                <!-- Text & Action Buttons -->
+                <div class="flex-1 text-center sm:text-left flex flex-col justify-center gap-1">
+                  <div class="flex flex-wrap items-center gap-2 justify-center sm:justify-start">
+                    <button type="button" 
+                            (click)="$event.stopPropagation(); triggerFileInput()" 
+                            class="px-3.5 py-1.5 bg-[#012d1d] hover:bg-[#1b4332] text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer">
+                      <span class="material-symbols-outlined text-sm">cloud_upload</span>
+                      <span>{{ uploadedPhotoUrl() ? 'Change Animal Photo' : 'Upload Animal Photo' }}</span>
+                    </button>
+
+                    @if (uploadedPhotoUrl()) {
+                      <button type="button" 
+                              (click)="$event.stopPropagation(); removeUploadedPhoto()" 
+                              class="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer">
+                        <span class="material-symbols-outlined text-sm">delete</span>
+                        <span>Remove</span>
+                      </button>
+                    }
+                  </div>
+
+                  @if (uploadedPhotoUrl()) {
+                    <div class="text-[11px] font-mono text-slate-600 mt-1 flex items-center gap-2 justify-center sm:justify-start">
+                      <span class="font-bold text-slate-800">{{ uploadedFileName() || 'animal-photo.jpg' }}</span>
+                      @if (uploadedFileSize()) {
+                        <span class="text-slate-400">({{ uploadedFileSize() }})</span>
+                      }
+                    </div>
+                  } @else {
+                    <p class="text-xs text-slate-600 font-medium mt-0.5">
+                      Drag &amp; drop an animal photo here or click to browse from device.
+                    </p>
+                    <p class="text-[11px] text-slate-400">
+                      Supports JPG, PNG, WEBP up to 10MB. Synced to biometric registry &amp; dossier.
+                    </p>
+                  }
+
+                  <!-- Quick sample photos picker for convenient testing -->
+                  <div class="flex items-center gap-1.5 pt-1.5 flex-wrap justify-center sm:justify-start text-[11px] text-slate-500" (click)="$event.stopPropagation()">
+                    <span class="text-[10px] text-slate-400 uppercase font-bold">Samples:</span>
+                    <button type="button" 
+                            (click)="setSamplePhoto('https://lh3.googleusercontent.com/aida-public/AB6AXuDX3SU2IzQ09GNgKTBfU9qnM6EVyiPHDz6nl4iz8KumlzrYMmgPYiyQdaGXZ5rPLI0s9FNOkZN6sRyCdzlSGl5h6YsnpYaUowW4hQz0Q5O0kmi4VDxw--sJEE_ugAajU1i3Mo0kur44IXHQ2vGZ-StKvBd0uA0Iv0qMrKpnepf-l_N5o-c5zyN_xox9lUdaTsqOMxYB9cGBwMFeptPJ5kDQrUxm0qYHmCbm2bCt4s2Ve54ZbVoaC2fDrA', 'Black Angus Heifer')"
+                            class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-semibold cursor-pointer">
+                      Angus Heifer
+                    </button>
+                    <button type="button" 
+                            (click)="setSamplePhoto('https://lh3.googleusercontent.com/aida-public/AB6AXuBR3zK31htETWqIaLZGQmMN9lcqcF9txG5T8hNnb1Hpbrk0xJhGQ-nyxzWq7BHSClbs2HA4btHPSGBI2xWMO0RO2HNO2hOjJ0ndClOMh7cKcKo2Hv56Q19OMWzCEiNoZC5Rb2AbvCmsxPFl1JJu5sQvqIEGRhQdhug5_6B8pC5TlkIam8xTTZDbod5FjDfU5voThUesd3-koXzCIAnO9zlFl4M5Q2dCJOhbIhN7gE92ZVxRvyBmPlDvEg', 'Merino Ewe')"
+                            class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-semibold cursor-pointer">
+                      Merino Ewe
+                    </button>
+                    <button type="button" 
+                            (click)="setSamplePhoto('https://lh3.googleusercontent.com/aida-public/AB6AXuDklPZqXhenIBdF449HE_I75H2YPWHgJekZeIL-hCot1LLjiKeCFlNAoyFqjZ-WOylFa_3GHj0kre6oZouy6Eb5WpofArnDbJJG0RXdHGUDcZFx12jf5bCUzMVc6GGSMnU6tGv8qG-qf7aqGH0YOYd6py-ppfT1zXfVREh0HqVa-tbwKWJSqH-bDP-gHOoKsc4Mf5VulPIs3nH_gLOhmVsiYPv980rxZw3ENik8uzfVLgBhhFxUlwoGzA', 'Broiler Flock')"
+                            class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-semibold cursor-pointer">
+                      Broiler
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 1 Live Data Link Feedback -->
+            <div class="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-700 text-sm">link</span>
+                <span class="font-bold text-emerald-950">Step 1 Data Linked:</span>
+                <span class="font-mono text-emerald-800">{{ getStepSummary(1) }}</span>
+              </div>
+              <span class="font-mono text-[10px] text-emerald-700 font-bold bg-white px-2 py-0.5 rounded shadow-xs">
+                Auto-Synced to Step Tab
+              </span>
+            </div>
+          </section>
+        </div>
+      }
+
+      <!-- ================= STEP 2: PEDIGREE, STUDBOOK & GENOMICS ================= -->
+      @if (stepMode() === 'all' || currentStep() === 2) {
+        <div id="step-2" class="space-y-4">
+          <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">2</div>
+                <div>
+                  <h2 class="font-heading text-base font-bold text-slate-900">Section B: Pedigree, Studbook &amp; Genomics</h2>
+                  <p class="text-xs text-slate-500">Lineage traceability, parentage verification, or hatchery provenance</p>
+                </div>
+              </div>
+              <span class="font-mono text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full">
+                Step 2 Linked Data
+              </span>
+            </div>
+
+            @if (parentsError()) {
+              <div class="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-sm text-red-600">warning</span>
+                  <span>{{ parentsError() }}</span>
+                </div>
+                <button type="button" (click)="loadSiresAndDams(form.speciesId)" class="px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-800 rounded-lg font-bold text-[11px] cursor-pointer">
+                  Retry
+                </button>
+              </div>
+            }
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Breed Registry -->
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold text-slate-700">Breed Registry / Hatchery Supplier *</label>
+                <input type="text" [(ngModel)]="form.breedAssociation" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:ring-1 focus:ring-emerald-600" placeholder="e.g. American Angus Association (AAA)">
+              </div>
+
+              <!-- Registry Number -->
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold text-slate-700">Official Association Reg / Lot Certificate #</label>
+                <input type="text" [(ngModel)]="form.associationRegNumber" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs outline-none focus:ring-1 focus:ring-emerald-600" placeholder="e.g. AAA #20491823">
+              </div>
+
+              <!-- Conception Method -->
+              <div class="flex flex-col gap-1 md:col-span-2">
+                <label class="text-xs font-bold text-slate-700">Conception / Multiplication Method</label>
+                <select [(ngModel)]="form.conceptionMethod" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none">
+                  <option>Artificial Insemination (AI) - Straw Batch #AI-4402</option>
+                  <option>Natural Service (Pasture Sire Exposed)</option>
+                  <option>Embryo Transfer (In-Vivo Flushed)</option>
+                  <option>Incubator Hatchery (Day-Old Delivery)</option>
+                  <option>Queen Cell Grafting (Apiary Nucleus)</option>
+                </select>
+              </div>
+
+              <!-- Sire Input Card (Loaded from API) -->
+              <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex flex-col gap-2">
+                <div class="flex justify-between items-center text-xs">
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-bold text-slate-700 uppercase text-[10px]">Sire (Father) Lineage</span>
+                    <span class="text-[9px] font-mono text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">API Lineage</span>
+                  </div>
+                  @if (isLoadingSires()) {
+                    <span class="font-mono text-[9px] text-amber-700 flex items-center gap-1">
+                      <span class="material-symbols-outlined text-[11px] animate-spin">sync</span>
+                      <span>Loading...</span>
+                    </span>
+                  } @else {
+                    <span class="font-mono text-[10px] text-emerald-700 font-bold">DNA Sire Verified</span>
+                  }
+                </div>
+
+                <!-- API Sire Dropdown -->
+                <div>
+                  <label class="text-[10px] text-emerald-900 font-bold block mb-1">Select Sire from API Herd:</label>
+                  <select [ngModel]="selectedSireId()" (ngModelChange)="onSireSelect($event)" class="w-full px-2.5 py-1.5 bg-white border border-emerald-300 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:ring-1 focus:ring-emerald-600">
+                    <option value="">-- Choose Registered Herd Sire from API --</option>
+                    @for (s of siresList(); track s.id) {
+                      <option [value]="s.id">{{ s.registeredAlias || s.tagId }} ({{ s.breed || 'Sire' }} - Tag: {{ s.tagId }})</option>
+                    }
+                    <option value="__manual__">+ External Stud / Artificial Insemination Straw</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="text-[10px] text-slate-500 font-bold">Sire Name &amp; ID</label>
+                  <input type="text" [(ngModel)]="form.sireName" class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-800 outline-none focus:ring-1 focus:ring-emerald-600">
+                </div>
+                <div>
+                  <label class="text-[10px] text-slate-500 font-bold">Sire Registration / RFID</label>
+                  <input type="text" [(ngModel)]="form.sireReg" class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg font-mono text-[11px] text-slate-700 outline-none">
+                </div>
+                <div>
+                  <label class="text-[10px] text-slate-500 font-bold">Sire Genetic Traits / EPDs</label>
+                  <input type="text" [(ngModel)]="form.sireStats" class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg font-mono text-[11px] text-slate-600 outline-none">
+                </div>
+              </div>
+
+              <!-- Dam Input Card (Loaded from API) -->
+              <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex flex-col gap-2">
+                <div class="flex justify-between items-center text-xs">
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-bold text-slate-700 uppercase text-[10px]">Dam (Mother) Lineage</span>
+                    <span class="text-[9px] font-mono text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">API Lineage</span>
+                  </div>
+                  @if (isLoadingDams()) {
+                    <span class="font-mono text-[9px] text-amber-700 flex items-center gap-1">
+                      <span class="material-symbols-outlined text-[11px] animate-spin">sync</span>
+                      <span>Loading...</span>
+                    </span>
+                  } @else {
+                    <span class="font-mono text-[10px] text-emerald-700 font-bold">DNA Dam Verified</span>
+                  }
+                </div>
+
+                <!-- API Dam Dropdown -->
+                <div>
+                  <label class="text-[10px] text-emerald-900 font-bold block mb-1">Select Dam from API Herd:</label>
+                  <select [ngModel]="selectedDamId()" (ngModelChange)="onDamSelect($event)" class="w-full px-2.5 py-1.5 bg-white border border-emerald-300 rounded-lg text-xs font-semibold text-slate-800 outline-none focus:ring-1 focus:ring-emerald-600">
+                    <option value="">-- Choose Registered Herd Dam from API --</option>
+                    @for (d of damsList(); track d.id) {
+                      <option [value]="d.id">{{ d.registeredAlias || d.tagId }} ({{ d.breed || 'Dam' }} - Tag: {{ d.tagId }})</option>
+                    }
+                    <option value="__manual__">+ External Dam / Donor Cow</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="text-[10px] text-slate-500 font-bold">Dam Name &amp; Visual ID</label>
+                  <input type="text" [(ngModel)]="form.damName" class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-800 outline-none focus:ring-1 focus:ring-emerald-600">
+                </div>
+                <div>
+                  <label class="text-[10px] text-slate-500 font-bold">Dam Registration / Visual Tag</label>
+                  <input type="text" [(ngModel)]="form.damReg" class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg font-mono text-[11px] text-slate-700 outline-none">
+                </div>
+                <div>
+                  <label class="text-[10px] text-slate-500 font-bold">Dam Production Traits / EPDs</label>
+                  <input type="text" [(ngModel)]="form.damStats" class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg font-mono text-[11px] text-slate-600 outline-none">
+                </div>
+              </div>
+
+              <!-- Genomic Tissue Sampling (TSU) -->
+              <div class="p-3.5 bg-emerald-50/50 rounded-xl border border-emerald-200/80 md:col-span-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-base">biotech</span>
+                  </div>
+                  <div>
+                    <span class="text-xs font-bold text-slate-900 block">Genomic Tissue Sampling Unit (TSU)</span>
+                    <span class="text-[11px] text-slate-500">Ear notch tissue vial sample for SNP 50K parentage and genomic enhanced EPDs</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="text" [(ngModel)]="form.tsuNumber" class="px-3 py-1.5 bg-white border border-emerald-300 rounded-lg font-mono text-xs font-bold text-slate-800 outline-none" placeholder="TSU #Barcode">
+                  <button type="button" (click)="scanTsu()" class="px-3 py-1.5 bg-[#012d1d] hover:bg-[#1b4332] text-white rounded-lg text-xs font-bold cursor-pointer transition-colors shrink-0">
+                    Scan Vial
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2 Live Data Link Feedback -->
+            <div class="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-700 text-sm">link</span>
+                <span class="font-bold text-emerald-950">Step 2 Data Linked:</span>
+                <span class="font-mono text-emerald-800">{{ getStepSummary(2) }}</span>
+              </div>
+              <span class="font-mono text-[10px] text-emerald-700 font-bold bg-white px-2 py-0.5 rounded shadow-xs">
+                Lineage Synchronized
+              </span>
+            </div>
+          </section>
+        </div>
+      }
+
+      <!-- ================= STEP 3: INTAKE PHYSICAL EXAM & BIOSECURITY ================= -->
+      @if (stepMode() === 'all' || currentStep() === 3) {
+        <div id="step-3" class="space-y-4">
+          <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">3</div>
+                <div>
+                  <h2 class="font-heading text-base font-bold text-slate-900">Section C: Intake Physical Exam &amp; Biosecurity</h2>
+                  <p class="text-xs text-slate-500">Scale capture, condition scoring, and veterinary quarantine disposition</p>
+                </div>
+              </div>
+              <span class="font-mono text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-900 px-2.5 py-0.5 rounded-full">
+                Step 3 Linked Data
+              </span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Scale Capture Widget -->
+              <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col justify-between">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="font-bold text-slate-700">Live Chute Scale Capture *</span>
+                  <span class="font-mono text-[10px] text-emerald-700 font-bold flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                    Scale Online
+                  </span>
+                </div>
+                <div class="flex items-baseline justify-between my-2">
+                  <div class="flex items-baseline gap-1">
+                    <input type="number" step="0.5" [(ngModel)]="form.weightKg" class="text-3xl font-heading font-bold text-[#012d1d] bg-transparent outline-none w-32">
+                    <span class="font-mono text-xs text-slate-500 font-bold">KG</span>
+                  </div>
+                  <div class="flex gap-1.5">
+                    <button type="button" (click)="simulateWeight()" class="px-2.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-bold cursor-pointer transition-colors">
+                      Poll
+                    </button>
+                    <button type="button" (click)="toggleLockScale()" [class]="scaleLocked() ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-700'" class="px-3 py-1 rounded-lg text-xs font-bold cursor-pointer transition-colors">
+                      {{ scaleLocked() ? 'Locked' : 'Lock Weight' }}
+                    </button>
+                  </div>
+                </div>
+                <span class="font-mono text-[10px] text-slate-400">Chute Sensor #TRU-TEST-900 &bull; Calibrated 3d ago</span>
+              </div>
+
+              <!-- BCS / Uniformity Score -->
+              <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col justify-between">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="font-bold text-slate-700">{{ managementType() === 'individual' ? 'Body Condition Score (BCS 1-5)' : 'Flock / Batch Uniformity' }}</span>
+                  <span class="font-mono text-[10px] text-[#012d1d] font-bold">{{ managementType() === 'individual' ? form.bcsScore : '96% Uniform' }}</span>
+                </div>
+                <div class="my-2 space-y-1.5">
+                  <input type="range" min="10" max="100" [value]="form.bcsSlider" (input)="onBcsSliderChange($event)" class="w-full accent-[#012d1d] cursor-pointer">
+                  <div class="flex justify-between text-[9px] font-mono text-slate-400">
+                    <span>1.0 (Thin)</span>
+                    <span>3.0 (Optimal)</span>
+                    <span>5.0 (Obese)</span>
+                  </div>
+                </div>
+                <span class="text-xs text-slate-500">Smooth cover over transverse ribs; hips well-fleshed.</span>
+              </div>
+
+              <!-- Quarantine Gate -->
+              <div class="flex flex-col gap-1 md:col-span-2">
+                <label class="text-xs font-bold text-slate-700">Biosecurity &amp; Quarantine Disposition *</label>
+                <select [(ngModel)]="form.quarantineDisposition" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:ring-1 focus:ring-emerald-600">
+                  <option>Quarantine Clearance Protocol (14 Days in Isolation Kraal 04)</option>
+                  <option>Direct Release (Internal Movement - Low Risk)</option>
+                  <option>High Alert Isolation (Foreign Animal Disease Gate)</option>
+                  <option>Broiler Biosecure Cleanroom Placement</option>
+                  <option>Apiary Quarantine Enclosure (Mite Free Certified)</option>
+                </select>
+              </div>
+
+              <!-- Preventive Intake Protocols (Checkboxes) -->
+              <div class="md:col-span-2 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                <span class="text-xs font-bold text-slate-800 block mb-2">Mandatory Intake Health Protocols:</span>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" [(ngModel)]="form.protocolBvdPi" class="accent-emerald-700 w-4 h-4 rounded">
+                    <span class="font-medium text-slate-700">BVD-PI Ear Notch Negative (Laboratory Clear)</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" [(ngModel)]="form.protocolClostridial" class="accent-emerald-700 w-4 h-4 rounded">
+                    <span class="font-medium text-slate-700">7-Way Clostridial / Blackleg Vaccine Booster</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" [(ngModel)]="form.protocolDewormer" class="accent-emerald-700 w-4 h-4 rounded">
+                    <span class="font-medium text-slate-700">Broad-Spectrum Parasiticide Drench / Pour-on</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" [(ngModel)]="form.protocolBrucellosis" class="accent-emerald-700 w-4 h-4 rounded">
+                    <span class="font-medium text-slate-700">Brucellosis Official Ear Tag &amp; Shield Tattoo</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Animal Provenance -->
+              <div class="md:col-span-2 flex flex-col gap-1">
+                <label class="text-xs font-bold text-slate-700">Animal Provenance / Origin Cadastre</label>
+                <input type="text" [(ngModel)]="form.provenance" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 outline-none" placeholder="e.g. Homebred (Oakridge North Pasture) or Acquired from Auction">
+              </div>
+            </div>
+
+            <!-- Step 3 Live Data Link Feedback -->
+            <div class="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-700 text-sm">link</span>
+                <span class="font-bold text-emerald-950">Step 3 Data Linked:</span>
+                <span class="font-mono text-emerald-800">{{ getStepSummary(3) }}</span>
+              </div>
+              <span class="font-mono text-[10px] text-emerald-700 font-bold bg-white px-2 py-0.5 rounded shadow-xs">
+                Vitals Certified
+              </span>
+            </div>
+          </section>
+        </div>
+      }
+
+      <!-- ================= STEP 4: IOT SENSOR PAIRING & TELEMETRY ================= -->
+      @if (stepMode() === 'all' || currentStep() === 4) {
+        <div id="step-4" class="space-y-4">
+          <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">4</div>
+                <div>
+                  <h2 class="font-heading text-base font-bold text-slate-900">Section D: Telemetry &amp; Smart Sensor Hardware Pairing</h2>
+                  <p class="text-xs text-slate-500">Real-time rumination monitoring, biometric sensors, and GPS transponders</p>
+                </div>
+              </div>
+              <span class="font-mono text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-900 px-2.5 py-0.5 rounded-full">
+                Step 4 Linked Data
+              </span>
+            </div>
+
+            <!-- Species Sensors API Status & Header -->
+            <div class="p-3 bg-slate-50 border border-slate-200/80 rounded-xl flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-700 text-base">sensors</span>
+                <span class="font-bold text-slate-800">Supported Hardware for {{ form.species }}:</span>
+                <span class="font-mono text-xs px-2 py-0.5 rounded bg-white border border-slate-200 text-emerald-800 font-bold">
+                  {{ pairedSensors().length }} Sensor{{ pairedSensors().length === 1 ? '' : 's' }} Supported
+                </span>
+                <span class="text-[10px] text-slate-400 font-mono hidden sm:inline">
+                  /api/v1/mobile/sensors/{{ form.speciesId }}/supported-sensors
+                </span>
+              </div>
+              <div class="flex items-center gap-2">
+                @if (isLoadingSensors()) {
+                  <span class="text-xs text-emerald-700 flex items-center gap-1 font-mono">
+                    <span class="material-symbols-outlined text-xs animate-spin">progress_activity</span>
+                    Syncing API...
+                  </span>
+                }
+                <button type="button" 
+                        (click)="loadSupportedSensorsForSpecies(form.speciesId)" 
+                        class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors shadow-xs" 
+                        title="Re-fetch supported sensors for active species">
+                  <span class="material-symbols-outlined text-xs">sync</span>
+                  Refresh Sensors
+                </button>
+              </div>
+            </div>
+
+            <!-- Error Banner -->
+            @if (sensorsError()) {
+              <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between text-xs text-amber-800">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-amber-600 text-sm">warning</span>
+                  <span>{{ sensorsError() }}</span>
+                </div>
+                <button type="button" (click)="loadSupportedSensorsForSpecies(form.speciesId)" class="underline font-bold hover:text-amber-900 cursor-pointer">
+                  Retry API
+                </button>
+              </div>
+            }
+
+            <!-- Sensors Dynamic List -->
+            @if (isLoadingSensors() && pairedSensors().length === 0) {
+              <div class="p-8 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200 space-y-2">
+                <span class="material-symbols-outlined text-emerald-700 text-3xl animate-spin">progress_activity</span>
+                <p class="text-xs font-bold text-slate-700">Loading Supported Sensor Specifications from API...</p>
+                <p class="text-[11px] text-slate-500 font-mono">Fetching telemetry schemas and compatibility roles for species {{ form.speciesId }}</p>
+              </div>
+            } @else {
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                @for (sensor of pairedSensors(); track sensor.deviceId) {
+                  <div class="p-4 rounded-xl border transition-all flex flex-col justify-between gap-3 shadow-xs"
+                       [ngClass]="sensor.isPaired ? 'bg-emerald-50/30 border-emerald-300 ring-1 ring-emerald-200/50' : 'bg-slate-50/70 border-slate-200'">
+                    
+                    <!-- Sensor Header -->
+                    <div class="space-y-1.5">
+                      <div class="flex items-start justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                          <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                               [ngClass]="sensor.isPaired ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'">
+                            @if (sensor.compatibilityRole === 'SMART_COLLAR') {
+                              <span class="material-symbols-outlined text-sm">watch</span>
+                            } @else if (sensor.compatibilityRole === 'RUMEN_BOLUS') {
+                              <span class="material-symbols-outlined text-sm">monitor_heart</span>
+                            } @else if (sensor.compatibilityRole === 'EAR_TAG') {
+                              <span class="material-symbols-outlined text-sm">badge</span>
+                            } @else if (sensor.compatibilityRole === 'GPS_TRANSPONDER') {
+                              <span class="material-symbols-outlined text-sm">satellite_alt</span>
+                            } @else if (sensor.compatibilityRole === 'GATEWAY_HUB') {
+                              <span class="material-symbols-outlined text-sm">router</span>
+                            } @else if (sensor.compatibilityRole === 'SCALE_SENSOR') {
+                              <span class="material-symbols-outlined text-sm">scale</span>
+                            } @else {
+                              <span class="material-symbols-outlined text-sm">sensors</span>
+                            }
+                          </div>
+                          <div>
+                            <h3 class="font-heading text-xs font-bold text-slate-900 leading-tight">
+                              {{ sensor.deviceName }}
+                            </h3>
+                            <p class="text-[11px] text-slate-500">
+                              {{ sensor.manufacturer }} &bull; Model {{ sensor.modelNumber || sensor.serialNumber }}
+                            </p>
+                          </div>
+                        </div>
+
+                        <!-- Paired status badge -->
+                        <span class="font-mono text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
+                              [ngClass]="sensor.isPaired ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-slate-200 text-slate-600'">
+                          {{ sensor.isPaired ? 'PAIRED' : 'UNPAIRED' }}
+                        </span>
+                      </div>
+
+                      <!-- Badges / Role / Frequency -->
+                      <div class="flex flex-wrap items-center gap-1.5 pt-1">
+                        @if (sensor.isRecommended) {
+                          <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-0.5">
+                            <span class="material-symbols-outlined text-[11px]">star</span>
+                            Recommended
+                          </span>
+                        }
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-slate-200 text-slate-700">
+                          {{ sensor.compatibilityRole.replace('_', ' ') }}
+                        </span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono text-slate-600 bg-white border border-slate-200">
+                          {{ sensor.defaultFrequencyOrProtocol }}
+                        </span>
+                        <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 ml-auto">
+                          BATTERY {{ sensor.batteryPct || 100 }}%
+                        </span>
+                      </div>
+
+                      <!-- Supported Telemetry Parameters -->
+                      @if (sensor.supportedParameters && sensor.supportedParameters.length > 0) {
+                        <div class="pt-1.5">
+                          <span class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Supported Telemetry Parameters</span>
+                          <div class="flex flex-wrap gap-1">
+                            @for (param of sensor.supportedParameters; track param.parameterId) {
+                              <span class="px-1.5 py-0.5 bg-white border border-slate-200/90 rounded text-[10px] font-mono text-slate-700 flex items-center gap-1"
+                                    title="{{ param.name }} (Unit: {{ param.unitOfMeasure }})">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                {{ param.name }} ({{ param.symbol }})
+                              </span>
+                            }
+                          </div>
+                        </div>
+                      }
+                    </div>
+
+                    <!-- Tag / Identification Input Field -->
+                    <div class="pt-2 border-t border-slate-200/80 space-y-1.5">
+                      <label class="block text-xs font-bold text-slate-700">
+                        Assigned Hardware Tag / Identification *
+                      </label>
+                      <div class="flex gap-2">
+                        <input type="text" 
+                               [ngModel]="sensor.tagOrIdentifier"
+                               (ngModelChange)="onSensorTagInput(sensor, $event)"
+                               placeholder="e.g. BLE-COLLAR-8841-A or EID tag" 
+                               class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg font-mono text-xs font-bold text-slate-800 outline-none focus:border-emerald-500 transition-colors">
+                        
+                        <!-- Pair / Verify Toggle Button -->
+                        <button type="button" 
+                                (click)="toggleSensorPairing(sensor)" 
+                                [class]="sensor.isPaired ? 'bg-[#012d1d] hover:bg-[#1b4332] text-white shadow-xs' : 'bg-slate-200 hover:bg-slate-300 text-slate-700'" 
+                                class="px-3 py-1.5 rounded-lg text-xs font-bold shrink-0 cursor-pointer transition-colors flex items-center gap-1">
+                          {{ sensor.isPaired ? 'Paired ✓' : 'Pair' }}
+                        </button>
+
+                        <!-- Auto-Assign Tag -->
+                        <button type="button" 
+                                (click)="autoAssignTag(sensor)" 
+                                class="px-2 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-bold shrink-0 cursor-pointer transition-colors" 
+                                title="Auto-Assign / Scan New Tag Identifier">
+                          <span class="material-symbols-outlined text-xs">refresh</span>
+                        </button>
+
+                        @if (sensor.deviceId.includes('-aux-')) {
+                          <button type="button" 
+                                  (click)="removeSensor(sensor)" 
+                                  class="px-2 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-bold shrink-0 cursor-pointer transition-colors" 
+                                  title="Remove auxiliary sensor">
+                            <span class="material-symbols-outlined text-xs">delete</span>
+                          </button>
+                        }
+                      </div>
+
+                      <div class="flex items-center justify-between text-[10px] text-slate-400 font-mono">
+                        <span>RSSI: {{ sensor.rssi || '-58 dBm (Optimal)' }} &bull; Firmware: v4.2.1</span>
+                        @if (sensor.tagOrIdentifier) {
+                          <span class="text-emerald-700 font-bold">Identified: {{ sensor.tagOrIdentifier }}</span>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <!-- Auxiliary Sensor Picker -->
+              @if (supportedSensors().length > 0) {
+                <div class="p-3 bg-slate-50/70 border border-dashed border-slate-300 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
+                  <div class="flex items-center gap-2 text-slate-600">
+                    <span class="material-symbols-outlined text-slate-500 text-sm">add_circle</span>
+                    <span>Need to pair an auxiliary sensor or dual transponder for this {{ form.species }}?</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    @for (s of supportedSensors(); track s.deviceId) {
+                      <button type="button" 
+                              (click)="addManualSensor(s)" 
+                              class="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700 flex items-center gap-1 shadow-2xs cursor-pointer transition-colors">
+                        + {{ s.deviceName.split(' ')[0] }}
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+            }
+
+
+
+            <!-- Step 4 Live Data Link Feedback -->
+            <div class="p-3.5 bg-emerald-50/70 border border-emerald-200 rounded-xl flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-700 text-sm">link</span>
+                <span class="font-bold text-emerald-950">Step 4 Data Linked:</span>
+                <span class="font-mono text-emerald-800">{{ getStepSummary(4) }}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-[10px] text-emerald-800 font-bold bg-white px-2.5 py-1 rounded-md shadow-2xs border border-emerald-200">
+                  {{ activePairedCount() }} of {{ pairedSensors().length }} Sensors Active
+                </span>
+              </div>
+            </div>
+          </section>
+        </div>
+      }
+
+      <!-- ================= STEP 5: HOUSING, KRAAL & PEN ALLOCATION ================= -->
+      @if (stepMode() === 'all' || currentStep() === 5) {
+        <div id="step-5" class="space-y-4">
+          <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">5</div>
+                <div>
+                  <h2 class="font-heading text-base font-bold text-slate-900">Section E: Pasture, Kraal &amp; Pen Allocation</h2>
+                  <p class="text-xs text-slate-500">Spatial assignment to kraals, pens, sheds, and cohort synchronization</p>
+                </div>
+              </div>
+              <span class="font-mono text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full">
+                Step 5 Linked Data
+              </span>
+            </div>
+
+            <!-- Active Farm & API Context Header -->
+            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-2 text-xs">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-slate-500 text-sm">home_work</span>
+                <span class="text-slate-600 font-semibold">Active Farm ID:</span>
+                <span class="font-mono text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-bold">
+                  {{ activeFarmId() || 'None (slingshot_active_farm not set)' }}
+                </span>
+                <span class="text-[10px] text-slate-400 font-mono">sessionService</span>
+              </div>
+              <span class="font-mono text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-semibold">
+                Live External API Only
+              </span>
+            </div>
+
+            @if (locationsError()) {
+              <div class="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-sm text-red-600">warning</span>
+                  <span>{{ locationsError() }}</span>
+                </div>
+                <button type="button" (click)="loadLocationsFromApi()" class="px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-800 rounded-lg font-bold text-[11px] cursor-pointer">
+                  Retry
+                </button>
+              </div>
+            }
+
+            @if (kraalsError()) {
+              <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-2 max-w-[80%]">
+                  <span class="material-symbols-outlined text-sm text-rose-600">error</span>
+                  <span class="break-words font-medium">{{ kraalsError() }}</span>
+                </div>
+                <button type="button" (click)="retryLoadKraals()" class="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-lg font-bold text-[11px] cursor-pointer">
+                  Retry API
+                </button>
+              </div>
+            }
+
+            @if (pensError()) {
+              <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-2 max-w-[80%]">
+                  <span class="material-symbols-outlined text-sm text-amber-600">error</span>
+                  <span class="break-words font-medium">{{ pensError() }}</span>
+                </div>
+                <button type="button" (click)="retryLoadPens()" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg font-bold text-[11px] cursor-pointer">
+                  Retry API
+                </button>
+              </div>
+            }
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Primary Location / Management Unit (Loaded from API) -->
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center justify-between">
+                  <label class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                    <span>Primary Farm Cadastre / Location *</span>
+                    <span class="text-[9px] font-mono text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">API Units</span>
+                  </label>
+                  @if (isLoadingLocations()) {
+                    <span class="font-mono text-[9px] text-amber-700 flex items-center gap-1">
+                      <span class="material-symbols-outlined text-[11px] animate-spin">sync</span>
+                      <span>Loading...</span>
+                    </span>
+                  }
+                </div>
+                <select [(ngModel)]="form.locationId" (change)="onLocationChange()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 outline-none focus:ring-1 focus:ring-emerald-600">
+                  @for (loc of locations(); track loc.id) {
+                    <option [value]="loc.id">{{ loc.name }} ({{ loc.description }})</option>
+                  }
+                </select>
+              </div>
+
+              <!-- Target Kraal / Facility Complex (Loaded from @GetMapping("/kraals/farm/{id}")) -->
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center justify-between">
+                  <label class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                    <span>Target Kraal / Complex *</span>
+                    <span class="text-[9px] font-mono text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">GET /kraals/farm/&#123;id&#125;</span>
+                  </label>
+                  @if (isLoadingKraals()) {
+                    <span class="font-mono text-[9px] text-amber-700 flex items-center gap-1">
+                      <span class="material-symbols-outlined text-[11px] animate-spin">sync</span>
+                      <span>Loading Kraals...</span>
+                    </span>
+                  }
+                </div>
+                <select [(ngModel)]="form.kraalId" (change)="onKraalChange()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 outline-none focus:ring-1 focus:ring-emerald-600">
+                  @if (filteredKraals().length === 0) {
+                    <option value="" disabled>-- No Kraals from External API --</option>
+                  }
+                  @for (k of filteredKraals(); track k.id) {
+                    <option [value]="k.id">{{ k.name }} ({{ k.type }})</option>
+                  }
+                </select>
+              </div>
+
+              <!-- Target Pen / Enclosure (Loaded from @GetMapping("/pens/kraal/{id}")) -->
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center justify-between">
+                  <label class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                    <span>Target Pen / Enclosure Bay *</span>
+                    <span class="text-[9px] font-mono text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">GET /pens/kraal/&#123;id&#125;</span>
+                  </label>
+                  @if (isLoadingPens()) {
+                    <span class="font-mono text-[9px] text-amber-700 flex items-center gap-1">
+                      <span class="material-symbols-outlined text-[11px] animate-spin">sync</span>
+                      <span>Loading Pens...</span>
+                    </span>
+                  }
+                </div>
+                <select [(ngModel)]="form.penId" (change)="onPenChange()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 outline-none focus:ring-1 focus:ring-emerald-600">
+                  @if (filteredPens().length === 0) {
+                    <option value="" disabled>-- No Pens from External API --</option>
+                  }
+                  @for (p of filteredPens(); track p.id) {
+                    <option [value]="p.id">{{ p.name }} [Capacity: {{ p.capacity }}]</option>
+                  }
+                </select>
+              </div>
+
+              <!-- Management Cohort -->
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold text-slate-700">Management Cohort</label>
+                <input type="text" [(ngModel)]="form.cohortName" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 outline-none">
+              </div>
+
+              <!-- Nutrition Protocol -->
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold text-slate-700">Initial Nutrition &amp; Ration Protocol</label>
+                <input type="text" [(ngModel)]="form.nutritionProtocol" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 outline-none">
+              </div>
+
+              <!-- Capitalized Value -->
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold text-slate-700">Initial Asset Capitalization ($ USD)</label>
+                <div class="relative">
+                  <span class="absolute left-3 top-2 text-xs font-bold text-slate-400">$</span>
+                  <input type="text" [(ngModel)]="form.capitalizedValue" class="w-full pl-7 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-800 outline-none">
+                </div>
+              </div>
+
+              <!-- Notes -->
+              <div class="md:col-span-2 flex flex-col gap-1">
+                <label class="text-xs font-bold text-slate-700">Clinical, Behavioral &amp; Environmental Notes</label>
+                <textarea [(ngModel)]="form.clinicalNotes" rows="2" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 outline-none focus:ring-1 focus:ring-emerald-600"></textarea>
+              </div>
+            </div>
+
+            <!-- Step 5 Live Data Link Feedback -->
+            <div class="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-700 text-sm">link</span>
+                <span class="font-bold text-emerald-950">Step 5 Data Linked:</span>
+                <span class="font-mono text-emerald-800">{{ getStepSummary(5) }}</span>
+              </div>
+              <span class="font-mono text-[10px] text-emerald-700 font-bold bg-white px-2 py-0.5 rounded shadow-xs">
+                Housing Confirmed
+              </span>
+            </div>
+          </section>
+
+          <!-- Complete Pre-Enrollment Verification Summary Synthesis Card (With direct Edit links to tabs) -->
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-800 text-xl">fact_check</span>
+                <div>
+                  <h3 class="font-heading text-base font-bold text-slate-900">Pre-Enrollment Verification Summary</h3>
+                  <p class="text-xs text-slate-500">Click any step card below to jump directly back to that step tab</p>
+                </div>
+              </div>
+              <span class="bg-emerald-100 text-emerald-900 font-mono text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">
+                All 5 Steps Linked
+              </span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <!-- Step 1 Card -->
+              <div (click)="setStep(1)" class="p-3.5 bg-slate-50 hover:bg-emerald-50/40 rounded-xl border border-slate-200/80 flex flex-col justify-between cursor-pointer transition-all hover:border-emerald-400 group">
+                <div>
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-[10px] uppercase font-bold text-slate-400">Step 1: Bio-Asset Identity</span>
+                    <span class="text-emerald-700 font-bold text-[10px] flex items-center gap-0.5 group-hover:underline">
+                      <span class="material-symbols-outlined text-xs">edit</span>
+                      Edit Tab 1
+                    </span>
+                  </div>
+                  <div class="font-bold text-slate-900 text-sm">{{ managementType() === 'individual' ? form.registeredName : form.batchId }}</div>
+                  <div class="font-mono text-slate-600">{{ managementType() === 'individual' ? 'Tag: #' + form.tagId + ' • ' + form.earTagColor : 'Count: ' + (form.quantity | number) + ' ' + form.unit }}</div>
+                </div>
+                <div class="text-emerald-800 font-bold mt-2">{{ form.species }} &bull; {{ form.breed }}</div>
+              </div>
+
+              <!-- Step 2 Card -->
+              <div (click)="setStep(2)" class="p-3.5 bg-slate-50 hover:bg-emerald-50/40 rounded-xl border border-slate-200/80 flex flex-col justify-between cursor-pointer transition-all hover:border-emerald-400 group">
+                <div>
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-[10px] uppercase font-bold text-slate-400">Step 2: Lineage &amp; Genetics</span>
+                    <span class="text-emerald-700 font-bold text-[10px] flex items-center gap-0.5 group-hover:underline">
+                      <span class="material-symbols-outlined text-xs">edit</span>
+                      Edit Tab 2
+                    </span>
+                  </div>
+                  <div class="font-bold text-slate-900">{{ form.sireName }} &times; {{ form.damName }}</div>
+                  <div class="font-mono text-slate-500 text-[11px]">{{ form.breedAssociation }} ({{ form.associationRegNumber }})</div>
+                </div>
+                <div class="text-slate-600 text-[11px] mt-2">{{ form.conceptionMethod }}</div>
+              </div>
+
+              <!-- Step 3 Card -->
+              <div (click)="setStep(3)" class="p-3.5 bg-slate-50 hover:bg-emerald-50/40 rounded-xl border border-slate-200/80 flex flex-col justify-between cursor-pointer transition-all hover:border-emerald-400 group">
+                <div>
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-[10px] uppercase font-bold text-slate-400">Step 3: Biosecurity &amp; Vitals</span>
+                    <span class="text-emerald-700 font-bold text-[10px] flex items-center gap-0.5 group-hover:underline">
+                      <span class="material-symbols-outlined text-xs">edit</span>
+                      Edit Tab 3
+                    </span>
+                  </div>
+                  <div class="font-bold text-slate-900">{{ form.weightKg }} kg &bull; {{ managementType() === 'individual' ? 'BCS: ' + form.bcsScore : 'Uniformity: Optimal' }}</div>
+                </div>
+                <div class="text-slate-600 text-[11px] mt-2 truncate">{{ form.quarantineDisposition }}</div>
+              </div>
+
+              <!-- Step 4 & 5 Card -->
+              <div (click)="setStep(4)" class="p-3.5 bg-slate-50 hover:bg-emerald-50/40 rounded-xl border border-slate-200/80 flex flex-col justify-between cursor-pointer transition-all hover:border-emerald-400 group">
+                <div>
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-[10px] uppercase font-bold text-slate-400">Step 4 &amp; 5: IoT &amp; Spatial Housing</span>
+                    <span class="text-emerald-700 font-bold text-[10px] flex items-center gap-0.5 group-hover:underline">
+                      <span class="material-symbols-outlined text-xs">edit</span>
+                      Edit Tab 4/5
+                    </span>
+                  </div>
+                  <div class="font-bold text-emerald-900">{{ form.collarId }} (Beacon Active)</div>
+                  <div class="text-slate-900 font-bold mt-0.5">{{ form.kraalName }}</div>
+                  <div class="font-mono text-slate-600 text-[11px]">{{ form.penName }}</div>
+                </div>
+                <div class="text-slate-500 text-[11px] mt-1">{{ form.locationName }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Step Navigation Footer (when in wizard mode) -->
+      @if (stepMode() === 'wizard') {
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3">
+          @if (currentStep() > 1) {
+            <button type="button" (click)="prevStep()" class="w-full sm:w-auto px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer">
+              <span class="material-symbols-outlined text-base">arrow_back</span>
+              <span>Back: {{ getPreviousStepLabel() }}</span>
+            </button>
+          } @else {
+            <a routerLink="/livestock" class="w-full sm:w-auto px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer">
+              <span class="material-symbols-outlined text-base">close</span>
+              <span>Cancel Registration</span>
+            </a>
+          }
+
+          <div class="flex items-center gap-2 font-mono text-xs text-slate-500">
+            <span class="font-bold text-[#012d1d]">Step {{ currentStep() }} of 5</span>
+            <span class="text-slate-300">&bull;</span>
+            <span class="font-bold text-slate-700">{{ getStepTitle(currentStep()) }}</span>
+          </div>
+
+          @if (currentStep() < 5) {
+            <button type="button" (click)="nextStep()" class="w-full sm:w-auto px-5 py-2.5 bg-[#012d1d] hover:bg-[#1b4332] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow transition-all cursor-pointer">
+              <span>Proceed to {{ getNextStepLabel() }}</span>
+              <span class="material-symbols-outlined text-base">arrow_forward</span>
+            </button>
+          } @else {
+            <button type="button" (click)="onSubmit()" [disabled]="isSubmitting()" class="w-full sm:w-auto px-5 py-2.5 bg-[#012d1d] hover:bg-[#1b4332] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow transition-all cursor-pointer disabled:opacity-50">
+              <span class="material-symbols-outlined text-base">verified</span>
+              <span>Enroll Animal (Issue Bio-Passport)</span>
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- RIGHT 4 COLS: Persistent Live Bio-Asset Preview & Interactive Step Links -->
+    <div class="xl:col-span-4 flex flex-col gap-6 sticky top-20">
+      <!-- Live Bio-Passport Preview -->
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1.5 text-[#012d1d]">
+            <span class="material-symbols-outlined text-lg">badge</span>
+            <span class="font-heading text-xs font-bold uppercase tracking-wider">Live Bio-Asset Preview</span>
+          </div>
+          <span class="font-mono text-[10px] bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded font-bold">
+            TAB {{ currentStep() }} SYNCED
+          </span>
+        </div>
+
+        <!-- Animal Image Container with Upload Overlay -->
+        <div class="relative w-full h-52 rounded-xl overflow-hidden bg-slate-100 shadow-inner group/photo">
+          <img [src]="assetPhotoUrl()" [alt]="form.registeredName" class="w-full h-full object-cover transition-transform duration-300 group-hover/photo:scale-105" referrerpolicy="no-referrer">
+          
+          <!-- Hover Upload Overlay -->
+          <button type="button" 
+                  (click)="triggerFileInput()" 
+                  class="absolute inset-0 bg-black/50 opacity-0 group-hover/photo:opacity-100 flex flex-col items-center justify-center text-white text-xs font-bold transition-opacity cursor-pointer z-10"
+                  title="Click to upload custom photo">
+            <span class="material-symbols-outlined text-3xl mb-1 text-emerald-300">add_a_photo</span>
+            <span>{{ uploadedPhotoUrl() ? 'Change Uploaded Photo' : 'Upload Animal Photo' }}</span>
+            <span class="text-[10px] text-white/80 font-normal">Click or drop image file</span>
+          </button>
+
+          <div class="absolute top-2 left-2 bg-[#012d1d]/90 backdrop-blur-md text-white px-2.5 py-1 rounded font-mono text-[10px] font-bold flex items-center gap-1 shadow z-20 pointer-events-none">
+            <span class="material-symbols-outlined text-[13px]">sell</span>
+            <span>{{ managementType() === 'individual' ? form.tagId : form.batchId }}</span>
+          </div>
+          <div class="absolute bottom-2 right-2 bg-white/95 backdrop-blur-md text-slate-900 px-2.5 py-1 rounded font-mono text-[11px] font-bold shadow z-20 pointer-events-none">
+            <span>{{ form.weightKg }} kg</span>
+          </div>
+          @if (uploadedPhotoUrl()) {
+            <div class="absolute top-2 right-2 bg-emerald-600/90 backdrop-blur-md text-white px-2 py-0.5 rounded font-mono text-[10px] font-bold flex items-center gap-1 shadow z-20 pointer-events-none">
+              <span class="material-symbols-outlined text-[12px]">verified</span>
+              <span>CUSTOM PHOTO</span>
+            </div>
+          }
+        </div>
+
+        <!-- Quick Photo Upload Action Strip -->
+        <div class="flex items-center justify-between text-xs -mt-1 pb-1 border-b border-slate-100">
+          <span class="text-slate-500 text-[11px] flex items-center gap-1 font-mono">
+            <span class="material-symbols-outlined text-xs text-emerald-700">image</span>
+            <span>{{ uploadedPhotoUrl() ? (uploadedFileName() || 'Custom Photo') : 'Default Taxonomy Photo' }}</span>
+          </span>
+          <div class="flex items-center gap-2">
+            <button type="button" 
+                    (click)="triggerFileInput()" 
+                    class="text-emerald-800 hover:text-emerald-950 text-[11px] font-bold flex items-center gap-1 cursor-pointer bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+              <span class="material-symbols-outlined text-xs">upload</span>
+              <span>{{ uploadedPhotoUrl() ? 'Change' : 'Upload' }}</span>
+            </button>
+            @if (uploadedPhotoUrl()) {
+              <button type="button" 
+                      (click)="removeUploadedPhoto()" 
+                      class="text-red-700 hover:text-red-800 text-[11px] font-bold cursor-pointer">
+                Reset
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Bio Passport Identity Header -->
+        <div class="flex flex-col">
+          <h3 class="font-heading text-lg font-bold text-[#012d1d] leading-tight">
+            {{ managementType() === 'individual' ? form.registeredName : form.batchId }}
+          </h3>
+          <span class="font-mono text-xs text-slate-500">
+            {{ managementType() === 'individual' ? 'ISO RFID: ' + form.rfid : 'Group Count: ' + (form.quantity | number) + ' ' + form.unit }}
+          </span>
+        </div>
+
+        <!-- Spec Tags Matrix (Interactive shortcuts to Tabs) -->
+        <div class="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded-xl text-xs">
+          <div (click)="setStep(1)" class="cursor-pointer hover:bg-slate-100 p-1.5 rounded-lg transition-colors" title="Click to edit in Step 1">
+            <span class="text-[10px] text-slate-400 uppercase font-bold flex items-center justify-between">
+              <span>Classification</span>
+              <span class="material-symbols-outlined text-[12px] text-emerald-700">edit</span>
+            </span>
+            <span class="font-bold text-[#012d1d] truncate block">{{ form.breed }}</span>
+          </div>
+          <div (click)="setStep(5)" class="cursor-pointer hover:bg-slate-100 p-1.5 rounded-lg transition-colors" title="Click to edit in Step 5">
+            <span class="text-[10px] text-slate-400 uppercase font-bold flex items-center justify-between">
+              <span>Holding Pen</span>
+              <span class="material-symbols-outlined text-[12px] text-emerald-700">edit</span>
+            </span>
+            <span class="font-bold text-slate-800 truncate block">{{ form.penName }}</span>
+          </div>
+          <div (click)="setStep(5)" class="cursor-pointer hover:bg-slate-100 p-1.5 rounded-lg transition-colors mt-1" title="Click to edit in Step 5">
+            <span class="text-[10px] text-slate-400 uppercase font-bold flex items-center justify-between">
+              <span>Allocated Kraal</span>
+              <span class="material-symbols-outlined text-[12px] text-emerald-700">edit</span>
+            </span>
+            <span class="font-mono text-[11px] text-slate-700 truncate block">{{ form.kraalName }}</span>
+          </div>
+          <div (click)="setStep(1)" class="cursor-pointer hover:bg-slate-100 p-1.5 rounded-lg transition-colors mt-1" title="Click to edit in Step 1">
+            <span class="text-[10px] text-slate-400 uppercase font-bold flex items-center justify-between">
+              <span>Purpose</span>
+              <span class="material-symbols-outlined text-[12px] text-emerald-700">edit</span>
+            </span>
+            <span class="font-mono text-[11px] text-emerald-700 font-bold truncate block">
+              {{ managementType() === 'individual' ? form.sex : form.groupPurpose }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Compliance & Regulatory Checklist Linked to Steps -->
+        <div class="flex flex-col gap-2 pt-1">
+          <span class="text-xs font-bold text-slate-700">Enrollment Step Compliance Gates</span>
+          <div (click)="setStep(1)" class="flex items-center justify-between p-2 bg-slate-50 hover:bg-slate-100 rounded-lg text-xs cursor-pointer transition-colors" title="Check Step 1">
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-emerald-700 text-sm">verified</span>
+              <span>{{ managementType() === 'individual' ? 'USDA 840 / NLIS Validation' : 'Flock Health Certificate' }}</span>
+            </div>
+            <span class="font-mono text-[10px] text-emerald-700 font-bold">PASSED</span>
+          </div>
+          <div (click)="setStep(4)" class="flex items-center justify-between p-2 bg-slate-50 hover:bg-slate-100 rounded-lg text-xs cursor-pointer transition-colors" title="Check Step 4">
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-emerald-700 text-sm">bluetooth_connected</span>
+              <span>{{ managementType() === 'individual' ? 'Smart Collar Beacon Sync' : 'Barn Sensor Hub Sync' }}</span>
+            </div>
+            <span class="font-mono text-[10px]" [class]="form.collarPaired ? 'text-emerald-700 font-bold' : 'text-amber-600'">
+              {{ form.collarPaired ? 'ACTIVE' : 'PENDING' }}
+            </span>
+          </div>
+          <div (click)="setStep(5)" class="flex items-center justify-between p-2 bg-slate-50 hover:bg-slate-100 rounded-lg text-xs cursor-pointer transition-colors" title="Check Step 5">
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-emerald-700 text-sm">check_circle</span>
+              <span>Kraal &amp; Pen Capacity Check</span>
+            </div>
+            <span class="font-mono text-[10px] text-emerald-700 font-bold">CONFIRMED</span>
+          </div>
+        </div>
+
+        <!-- Final Commit Button in Sidebar -->
+        <button type="button" (click)="onSubmit()" [disabled]="isSubmitting()" class="w-full py-2.5 bg-[#012d1d] text-white hover:bg-[#1b4332] rounded-xl font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
+          <span class="material-symbols-outlined text-base">assignment_turned_in</span>
+          <span>Commit &amp; Print Ear Tag Labels</span>
+        </button>
+      </div>
+
+      <!-- Quick Registry Batch Shortcut Card -->
+      <div class="bg-slate-100 rounded-2xl p-4 flex items-center gap-3 border border-slate-200">
+        <div class="p-2.5 rounded-xl bg-white text-[#012d1d] shadow-sm">
+          <span class="material-symbols-outlined text-xl">batch_prediction</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-xs font-bold text-slate-800">Enrolling multiple head or flocks?</span>
+          <span class="text-[11px] text-slate-500">Switch between Individual and Group mode at any time in Step 1.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
